@@ -4,7 +4,7 @@
 
 - Expanded the package-owned observability surface around durable tasks, including normalized progress state, persisted steps, bootstrap-plus-live subscription flows, aggregate reads, stale state, retention helpers, and the tiny live tracker.
 - Added first-class live filtering by durable task keys such as `dedupeKey`, `concurrencyKey`, and `supersedeKey`, plus broader generic channel helpers for `topic`, `resource`, and `correlation`.
-- Kept the runtime model host-owned and generic, with Postgres storage, child-process execution, optional Socket.IO-style bridging, and no platform-specific UI assumptions.
+- Kept the runtime model host-owned and generic, with Postgres storage, child-process execution and optional Socket.IO-style bridging.
 
 ## 0.1.0
 
