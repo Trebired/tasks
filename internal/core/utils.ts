@@ -3,7 +3,7 @@ import { setTimeout as delay } from "node:timers/promises";
 
 import type { TaskTerminalError } from "#2kjvrax0gr4m";
 
-function nowIso(value?: string | Date | number | null): string {
+export function nowIso(value?: string | Date | number | null): string {
   if (value == null) {
     return new Date().toISOString();
   }
@@ -15,19 +15,19 @@ function nowIso(value?: string | Date | number | null): string {
   return new Date(value).toISOString();
 }
 
-function taskId(value?: string | null): string {
+export function taskId(value?: string | null): string {
   return value || randomUUID();
 }
 
-function leaseToken(): string {
+export function leaseToken(): string {
   return randomUUID();
 }
 
-function sleep(ms: number): Promise<void> {
+export function sleep(ms: number): Promise<void> {
   return delay(ms).then(() => undefined);
 }
 
-function clampPercent(value: number | null | undefined): number | null {
+export function clampPercent(value: number | null | undefined): number | null {
   if (value == null || Number.isNaN(value)) {
     return null;
   }
@@ -43,7 +43,7 @@ function clampPercent(value: number | null | undefined): number | null {
   return value;
 }
 
-function toErrorShape(error: unknown, fallbackMessage = "Task execution failed"): TaskTerminalError {
+export function toErrorShape(error: unknown, fallbackMessage = "Task execution failed"): TaskTerminalError {
   if (error && typeof error === "object") {
     const value = error as Record<string, unknown>;
     return {
@@ -67,7 +67,7 @@ function toErrorShape(error: unknown, fallbackMessage = "Task execution failed")
   };
 }
 
-function toRecord(value: unknown): Record<string, unknown> | null {
+export function toRecord(value: unknown): Record<string, unknown> | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     return null;
   }
@@ -75,7 +75,7 @@ function toRecord(value: unknown): Record<string, unknown> | null {
   return value as Record<string, unknown>;
 }
 
-function parseJsonValue<T>(value: unknown, fallback: T): T {
+export function parseJsonValue<T>(value: unknown, fallback: T): T {
   if (value == null) {
     return fallback;
   }
@@ -91,7 +91,7 @@ function parseJsonValue<T>(value: unknown, fallback: T): T {
   return value as T;
 }
 
-async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+export async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
   if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) {
     return promise;
   }
@@ -105,15 +105,3 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T
 
   return Promise.race([promise, timeout]);
 }
-
-export {
-  clampPercent,
-  leaseToken,
-  nowIso,
-  parseJsonValue,
-  sleep,
-  taskId,
-  toErrorShape,
-  toRecord,
-  withTimeout,
-};

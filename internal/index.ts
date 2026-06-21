@@ -24,7 +24,7 @@ export {
   resolveTaskLifecycleState,
 } from "./core/snapshot.js";
 export { defineTaskHandler } from "./handler.js";
-export { createChildProcessTaskExecutor } from "./executor/child_process.js";
+export { createChildProcessTaskExecutor } from "./executor/child/process.js";
 export {
   createSubscriptionBootstrap,
   createTaskLiveHub,

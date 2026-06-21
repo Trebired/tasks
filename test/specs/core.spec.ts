@@ -7,8 +7,8 @@ import {
   createTaskLiveTracker,
   defineTaskHandler,
   taskChannel,
-} from "../../src/index.js";
-import { buildTaskAggregateSnapshot, createTaskSnapshot } from "../../src/core/snapshot.js";
+} from "#8t8bq600b4wu";
+import { buildTaskAggregateSnapshot, createTaskSnapshot } from "#ir9grtwyf3f1";
 import type {
   TaskAggregateSnapshot,
   TaskAppendStepInput,
@@ -33,7 +33,7 @@ import type {
   TaskStore,
   TaskSuccessInput,
   TaskUpdateProgressInput,
-} from "../../src/types.js";
+} from "#2kjvrax0gr4m";
 
 class MemoryTaskStore implements TaskStore {
   tasks = new Map<string, TaskRecord>();

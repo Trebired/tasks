@@ -1,7 +1,7 @@
 export default {
-  sourceRoot: "src",
+  sourceRoot: ".",
   sourceExtensions: [".ts", ".tsx", ".js", ".jsx"],
-  excludeDirs: ["node_modules", "dist", "tmp", ".vite"],
+  excludeDirs: ["node_modules", "dist", "tmp", ".vite", "test", "examples"],
   logging: {
     enabled: true,
     quiet: false,
@@ -28,6 +28,21 @@ export default {
         aliasPrefix: "#",
       },
     },
-    dry: {},
+    dry: {
+      helpers: [
+        {
+          from: "./internal/core/utils.ts",
+          exportName: "clampPercent",
+        },
+        {
+          from: "./internal/core/utils.ts",
+          exportName: "nowIso",
+        },
+        {
+          from: "./internal/core/utils.ts",
+          exportName: "toRecord",
+        },
+      ],
+    },
   },
 };

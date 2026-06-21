@@ -13,53 +13,13 @@ function sortSnapshots(snapshots: TaskSnapshot[]): TaskSnapshot[] {
 
 function createTaskLiveTracker(): TaskLiveTracker {
   const emitter = new TaskEventEmitter<(state: TaskLiveTrackerState) => void>();
-  let state: TaskLiveTrackerState = {
-    snapshots: [],
-    steps: {},
-    aggregate: null,
-    updatedAt: null,
-  };
+  let state = createInitialTrackerState();
 
   return {
     apply(message: TaskLiveMessage): TaskLiveTrackerState {
-      if (message.type === "bootstrap") {
-        state = {
-          snapshots: sortSnapshots(message.snapshots),
-          steps: message.steps,
-          aggregate: message.aggregate,
-          updatedAt: message.timestamp,
-        };
-        emitter.emit(state);
-        return state;
-      }
-
-      const event = message.event;
-      let snapshots = state.snapshots;
-      let steps = {
-        ...state.steps,
-      };
-
-      if (event.snapshot) {
-        const others = snapshots.filter((snapshot) => snapshot.taskId !== event.snapshot?.taskId);
-        snapshots = sortSnapshots([event.snapshot, ...others]);
-      }
-
-      if (event.step) {
-        const existing = steps[event.taskId] || [];
-        steps[event.taskId] = [...existing, event.step];
-      }
-
-      const aggregate = state.aggregate
-        ? buildTaskAggregateSnapshot(snapshots)
-        : state.aggregate;
-
-      state = {
-        snapshots,
-        steps,
-        aggregate,
-        updatedAt: message.timestamp,
-      };
-
+      state = message.type === "bootstrap"
+        ? applyBootstrapMessage(message)
+        : applyLiveEventMessage(state, message);
       emitter.emit(state);
       return state;
     },
@@ -69,6 +29,76 @@ function createTaskLiveTracker(): TaskLiveTracker {
     onChange(listener) {
       return emitter.add(listener);
     },
+  };
+}
+
+function createInitialTrackerState(): TaskLiveTrackerState {
+  return {
+    snapshots: [],
+    steps: {},
+    aggregate: null,
+    updatedAt: null,
+  };
+}
+
+function applyBootstrapMessage(message: Extract<TaskLiveMessage, {
+  type: "bootstrap";
+}>): TaskLiveTrackerState {
+  return {
+    snapshots: sortSnapshots(message.snapshots),
+    steps: message.steps,
+    aggregate: message.aggregate,
+    updatedAt: message.timestamp,
+  };
+}
+
+function applyLiveEventMessage(
+  state: TaskLiveTrackerState,
+  message: Extract<TaskLiveMessage, {
+    type: "event";
+  }>,
+): TaskLiveTrackerState {
+  const snapshots = applySnapshotUpdate(state.snapshots, message);
+  const steps = applyStepUpdate(state.steps, message);
+
+  return {
+    snapshots,
+    steps,
+    aggregate: state.aggregate ? buildTaskAggregateSnapshot(snapshots) : state.aggregate,
+    updatedAt: message.timestamp,
+  };
+}
+
+function applySnapshotUpdate(
+  snapshots: TaskSnapshot[],
+  message: Extract<TaskLiveMessage, {
+    type: "event";
+  }>,
+): TaskSnapshot[] {
+  if (!message.event.snapshot) {
+    return snapshots;
+  }
+
+  const others = snapshots.filter((snapshot) => snapshot.taskId !== message.event.snapshot?.taskId);
+  return sortSnapshots([message.event.snapshot, ...others]);
+}
+
+function applyStepUpdate(
+  steps: TaskLiveTrackerState["steps"],
+  message: Extract<TaskLiveMessage, {
+    type: "event";
+  }>,
+): TaskLiveTrackerState["steps"] {
+  if (!message.event.step) {
+    return {
+      ...steps,
+    };
+  }
+
+  const existing = steps[message.event.taskId] || [];
+  return {
+    ...steps,
+    [message.event.taskId]: [...existing, message.event.step],
   };
 }
 

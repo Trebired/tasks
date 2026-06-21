@@ -36,11 +36,6 @@ async function resolveRetryDecision(input: {
   const policy = input.handler.retry;
   const maxAttempts = Math.max(1, policy?.maxAttempts ?? input.task.maxAttempts ?? input.defaultMaxAttempts);
   const attempt = input.task.attempt;
-
-  if (attempt >= maxAttempts) {
-    return { retry: false };
-  }
-
   const context: TaskRetryContext = {
     task: input.task,
     handler: input.handler,
@@ -48,37 +43,51 @@ async function resolveRetryDecision(input: {
     attempt,
     maxAttempts,
   };
-
   const backoff = policy?.backoff;
 
+  if (attempt >= maxAttempts) {
+    return { retry: false };
+  }
+
   if (typeof backoff === "function") {
-    const resolved = await (backoff as TaskRetryResolver)(context);
-    if (resolved == null) {
+    return resolveFunctionRetryDecision(attempt, backoff as TaskRetryResolver, context);
+  }
+
+  return createRetryDecision(attempt, backoff);
+}
+
+async function resolveFunctionRetryDecision(
+  attempt: number,
+  resolver: TaskRetryResolver,
+  context: TaskRetryContext,
+): Promise<TaskRetryDecision> {
+  const resolved = await resolver(context);
+  if (resolved == null) {
+    return { retry: false };
+  }
+
+  if (typeof resolved === "object" && !Array.isArray(resolved) && "retry" in resolved) {
+    const decision = resolved as TaskRetryDecision;
+    if (!decision.retry) {
       return { retry: false };
-    }
-
-    if (typeof resolved === "object" && !Array.isArray(resolved) && "retry" in resolved) {
-      const decision = resolved as TaskRetryDecision;
-      if (!decision.retry) {
-        return { retry: false };
-      }
-
-      return {
-        retry: true,
-        scheduledAt: decision.scheduledAt ?? nowIso(Date.now() + resolveBackoffMs(attempt, null)),
-      };
     }
 
     return {
       retry: true,
-      scheduledAt: nowIso(resolved as string | Date | number),
+      scheduledAt: decision.scheduledAt ?? nowIso(Date.now() + resolveBackoffMs(attempt, null)),
     };
   }
 
-  const scheduledAt = nowIso(Date.now() + resolveBackoffMs(attempt, backoff));
   return {
     retry: true,
-    scheduledAt,
+    scheduledAt: nowIso(resolved as string | Date | number),
+  };
+}
+
+function createRetryDecision(attempt: number, backoff?: TaskRetryBackoff | null): TaskRetryDecision {
+  return {
+    retry: true,
+    scheduledAt: nowIso(Date.now() + resolveBackoffMs(attempt, backoff)),
   };
 }
 

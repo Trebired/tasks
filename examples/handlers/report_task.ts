@@ -1,4 +1,4 @@
-import { defineTaskHandler } from "../../src/index";
+import { defineTaskHandler } from "#8t8bq600b4wu";
 
 export default defineTaskHandler<{ reportId: string }, { outputPath: string }>({
   async run(input, context) {

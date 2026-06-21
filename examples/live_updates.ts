@@ -3,7 +3,7 @@ import {
   createTaskLiveHub,
   createTaskLiveTracker,
   taskChannel,
-} from "../src/index";
+} from "#8t8bq600b4wu";
 import type {
   TaskAppendStepInput,
   TaskCancelInput,
@@ -25,7 +25,7 @@ import type {
   TaskStore,
   TaskSuccessInput,
   TaskUpdateProgressInput,
-} from "../src/types";
+} from "#2kjvrax0gr4m";
 
 class MemoryTaskStore implements TaskStore {
   tasks = new Map<string, TaskRecord>();

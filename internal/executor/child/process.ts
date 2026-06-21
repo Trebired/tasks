@@ -8,8 +8,8 @@ import type {
   TaskExecutorOutcome,
   TaskExecutorProgressEvent,
   TaskExecutorRunRequest,
-} from "../types.js";
-import { toErrorShape } from "../core/utils.js";
+} from "#ksjjcxvzvz26";
+import { toErrorShape } from "#g6h3y0rvrh9n";
 
 type ChildWorkerMessage =
   | {
@@ -77,177 +77,211 @@ function resolveModuleSpecifier(input: string | URL): string {
 
 function createChildProcessTaskExecutor(options: ChildProcessTaskExecutorOptions = {}): TaskExecutor {
   return {
-    async execute(request: TaskExecutorRunRequest): Promise<TaskExecutionHandle> {
-      const runtime = request.handler.entrypoint.runtime ?? "inherit";
-      const workerPath = fileURLToPath(new URL("./child_process_worker.js", import.meta.url));
-      const runtimeCommand = resolveRuntimeCommand(runtime, options);
-      const args = [...runtimeCommand.prefixArgs, workerPath];
-      const env = {
-        ...process.env,
-        ...options.env,
-        ...request.handler.entrypoint.env,
-        TB_TASK_CHILD_PAYLOAD: JSON.stringify({
-          task: {
-            id: request.task.id,
-            kind: request.task.kind,
-            attempt: request.task.attempt,
-            maxAttempts: request.task.maxAttempts,
-            metadata: request.task.metadata ?? null,
-            channels: request.task.channels || [],
-            dedupeKey: request.task.dedupeKey ?? null,
-            supersedeKey: request.task.supersedeKey ?? null,
-            input: request.task.input,
-          },
-          handler: {
-            module: resolveModuleSpecifier(request.handler.entrypoint.module),
-            export: request.handler.entrypoint.export,
-          },
-        }),
-      };
-
-      const child = spawn(runtimeCommand.command, args, {
-        cwd: request.handler.entrypoint.cwd || process.cwd(),
-        env,
-        stdio: ["ignore", "pipe", "pipe"],
-      });
-
-      let buffer = "";
-      let cancelled = false;
-      let settled = false;
-      let outcome: TaskExecutorOutcome | null = null;
-      let eventChain = Promise.resolve();
-      let stderr = "";
-
-      const consumeLine = (line: string) => {
-        if (!line.trim()) {
-          return;
-        }
-
-        let message: ChildWorkerMessage;
-        try {
-          message = JSON.parse(line) as ChildWorkerMessage;
-        } catch {
-          return;
-        }
-
-        if (message.type === "progress") {
-          eventChain = eventChain.then(() => request.onEvent?.({
-            type: "progress",
-            progress: message.progress,
-          }));
-          return;
-        }
-
-        if (message.type === "step") {
-          eventChain = eventChain.then(() => request.onEvent?.({
-            type: "step",
-            step: message.step,
-          }));
-          return;
-        }
-
-        if (message.type === "result") {
-          outcome = {
-            status: "succeeded",
-            output: message.output,
-          };
-          return;
-        }
-
-        if (message.type === "error") {
-          outcome = {
-            status: cancelled ? "cancelled" : "failed",
-            error: message.error,
-          };
-        }
-      };
-
-      child.stdout?.setEncoding("utf8");
-      child.stdout?.on("data", (chunk: string) => {
-        buffer += chunk;
-
-        while (true) {
-          const index = buffer.indexOf("\n");
-          if (index < 0) {
-            break;
-          }
-
-          const line = buffer.slice(0, index);
-          buffer = buffer.slice(index + 1);
-          consumeLine(line);
-        }
-      });
-
-      child.stderr?.setEncoding("utf8");
-      child.stderr?.on("data", (chunk: string) => {
-        stderr += chunk;
-      });
-
-      const completion = new Promise<TaskExecutorOutcome>((resolve) => {
-        child.on("exit", async (code, signal) => {
-          if (settled) {
-            return;
-          }
-
-          settled = true;
-          await eventChain;
-
-          if (outcome) {
-            resolve(outcome);
-            return;
-          }
-
-          if (cancelled || signal === "SIGTERM" || signal === "SIGKILL") {
-            resolve({
-              status: "cancelled",
-            });
-            return;
-          }
-
-          resolve({
-            status: "failed",
-            error: toErrorShape(stderr || `Child process exited with code ${code ?? "unknown"}`),
-          });
-        });
-
-        child.on("error", async (error) => {
-          if (settled) {
-            return;
-          }
-
-          settled = true;
-          await eventChain;
-          resolve({
-            status: cancelled ? "cancelled" : "failed",
-            error: toErrorShape(error),
-          });
-        });
-      });
-
-      return {
-        async cancel(reason?: string) {
-          if (cancelled || child.killed) {
-            return;
-          }
-
-          cancelled = true;
-          child.kill("SIGTERM");
-
-          const killTimeoutMs = options.killTimeoutMs ?? 5_000;
-          setTimeout(() => {
-            if (child.exitCode == null && child.signalCode == null) {
-              child.kill("SIGKILL");
-            }
-          }, killTimeoutMs).unref?.();
-
-          if (reason) {
-            stderr += `${reason}\n`;
-          }
-        },
-        completion,
-      };
-    },
+    execute: (request) => executeChildProcessTask(options, request),
   };
+}
+
+async function executeChildProcessTask(
+  options: ChildProcessTaskExecutorOptions,
+  request: TaskExecutorRunRequest,
+): Promise<TaskExecutionHandle> {
+  const child = spawnChildProcess(options, request);
+  const state = createChildProcessState();
+
+  attachChildStdout(child, state, request);
+  attachChildStderr(child, state);
+
+  return {
+    cancel: (reason) => cancelChildProcess(child, state, options, reason),
+    completion: createChildCompletion(child, state),
+  };
+}
+
+function spawnChildProcess(options: ChildProcessTaskExecutorOptions, request: TaskExecutorRunRequest) {
+  const runtime = request.handler.entrypoint.runtime ?? "inherit";
+  const runtimeCommand = resolveRuntimeCommand(runtime, options);
+  const workerPath = fileURLToPath(new URL("./process_worker.js", import.meta.url));
+
+  return spawn(runtimeCommand.command, [...runtimeCommand.prefixArgs, workerPath], {
+    cwd: request.handler.entrypoint.cwd || process.cwd(),
+    env: createChildWorkerEnv(options, request),
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+}
+
+function createChildWorkerEnv(options: ChildProcessTaskExecutorOptions, request: TaskExecutorRunRequest) {
+  return {
+    ...process.env,
+    ...options.env,
+    ...request.handler.entrypoint.env,
+    TB_TASK_CHILD_PAYLOAD: JSON.stringify({
+      task: {
+        id: request.task.id,
+        kind: request.task.kind,
+        attempt: request.task.attempt,
+        maxAttempts: request.task.maxAttempts,
+        metadata: request.task.metadata ?? null,
+        channels: request.task.channels || [],
+        dedupeKey: request.task.dedupeKey ?? null,
+        supersedeKey: request.task.supersedeKey ?? null,
+        input: request.task.input,
+      },
+      handler: {
+        module: resolveModuleSpecifier(request.handler.entrypoint.module),
+        export: request.handler.entrypoint.export,
+      },
+    }),
+  };
+}
+
+function createChildProcessState() {
+  return {
+    buffer: "",
+    cancelled: false,
+    settled: false,
+    outcome: null as TaskExecutorOutcome | null,
+    eventChain: Promise.resolve(),
+    stderr: "",
+  };
+}
+
+function attachChildStdout(
+  child: ReturnType<typeof spawn>,
+  state: ReturnType<typeof createChildProcessState>,
+  request: TaskExecutorRunRequest,
+): void {
+  child.stdout?.setEncoding("utf8");
+  child.stdout?.on("data", (chunk: string) => {
+    state.buffer += chunk;
+    consumeBufferedLines(state, request);
+  });
+}
+
+function attachChildStderr(child: ReturnType<typeof spawn>, state: ReturnType<typeof createChildProcessState>): void {
+  child.stderr?.setEncoding("utf8");
+  child.stderr?.on("data", (chunk: string) => {
+    state.stderr += chunk;
+  });
+}
+
+function consumeBufferedLines(state: ReturnType<typeof createChildProcessState>, request: TaskExecutorRunRequest): void {
+  while (true) {
+    const index = state.buffer.indexOf("\n");
+    if (index < 0) {
+      return;
+    }
+
+    const line = state.buffer.slice(0, index);
+    state.buffer = state.buffer.slice(index + 1);
+    consumeWorkerLine(line, state, request);
+  }
+}
+
+function consumeWorkerLine(
+  line: string,
+  state: ReturnType<typeof createChildProcessState>,
+  request: TaskExecutorRunRequest,
+): void {
+  const message = parseWorkerMessage(line);
+  if (!message) {
+    return;
+  }
+
+  if (message.type === "progress" || message.type === "step") {
+    state.eventChain = state.eventChain.then(() => request.onEvent?.(message));
+    return;
+  }
+
+  state.outcome = message.type === "result"
+    ? { status: "succeeded", output: message.output }
+    : { status: state.cancelled ? "cancelled" : "failed", error: message.error };
+}
+
+function parseWorkerMessage(line: string): ChildWorkerMessage | null {
+  if (!line.trim()) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(line) as ChildWorkerMessage;
+  } catch {
+    return null;
+  }
+}
+
+function createChildCompletion(
+  child: ReturnType<typeof spawn>,
+  state: ReturnType<typeof createChildProcessState>,
+): Promise<TaskExecutorOutcome> {
+  return new Promise<TaskExecutorOutcome>((resolve) => {
+    child.on("exit", async (code, signal) => {
+      if (state.settled) {
+        return;
+      }
+
+      state.settled = true;
+      await state.eventChain;
+      resolve(resolveExitOutcome(state, code, signal));
+    });
+
+    child.on("error", async (error) => {
+      if (state.settled) {
+        return;
+      }
+
+      state.settled = true;
+      await state.eventChain;
+      resolve({
+        status: state.cancelled ? "cancelled" : "failed",
+        error: toErrorShape(error),
+      });
+    });
+  });
+}
+
+function resolveExitOutcome(
+  state: ReturnType<typeof createChildProcessState>,
+  code: number | null,
+  signal: NodeJS.Signals | null,
+): TaskExecutorOutcome {
+  if (state.outcome) {
+    return state.outcome;
+  }
+
+  if (state.cancelled || signal === "SIGTERM" || signal === "SIGKILL") {
+    return {
+      status: "cancelled",
+    };
+  }
+
+  return {
+    status: "failed",
+    error: toErrorShape(state.stderr || `Child process exited with code ${code ?? "unknown"}`),
+  };
+}
+
+async function cancelChildProcess(
+  child: ReturnType<typeof spawn>,
+  state: ReturnType<typeof createChildProcessState>,
+  options: ChildProcessTaskExecutorOptions,
+  reason?: string,
+): Promise<void> {
+  if (state.cancelled || child.killed) {
+    return;
+  }
+
+  state.cancelled = true;
+  child.kill("SIGTERM");
+  if (reason) {
+    state.stderr += `${reason}\n`;
+  }
+
+  const killTimeoutMs = options.killTimeoutMs ?? 5_000;
+  setTimeout(() => {
+    if (child.exitCode == null && child.signalCode == null) {
+      child.kill("SIGKILL");
+    }
+  }, killTimeoutMs).unref?.();
 }
 
 export {

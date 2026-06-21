@@ -3,7 +3,7 @@ import {
   createPostgresTaskStore,
   createPostgresTaskStoreSchema,
   createTaskHost,
-} from "../src/index";
+} from "#8t8bq600b4wu";
 
 async function main() {
   const databaseUrl = process.env.DATABASE_URL;

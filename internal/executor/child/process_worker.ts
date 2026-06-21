@@ -1,7 +1,7 @@
 import process from "node:process";
 
-import type { TaskHandlerModule, TaskTerminalError } from "../types.js";
-import { clampPercent, toErrorShape } from "../core/utils.js";
+import type { TaskHandlerModule, TaskTerminalError } from "#ksjjcxvzvz26";
+import { clampPercent, toErrorShape } from "#g6h3y0rvrh9n";
 
 type ChildWorkerPayload = {
   task: {
@@ -70,61 +70,15 @@ function resolveHandlerExport(mod: Record<string, unknown>, exportName?: string)
 }
 
 async function main(): Promise<void> {
-  const encoded = process.env.TB_TASK_CHILD_PAYLOAD;
-  if (!encoded) {
-    throw new Error("Missing TB_TASK_CHILD_PAYLOAD");
-  }
-
-  const payload = JSON.parse(encoded) as ChildWorkerPayload;
-  const mod = await import(payload.handler.module);
-  const handler = resolveHandlerExport(mod as Record<string, unknown>, payload.handler.export);
-
+  const payload = readWorkerPayload();
+  const handler = await loadWorkerHandler(payload);
   const controller = new AbortController();
-  const exit = () => controller.abort();
-
-  process.on("SIGINT", exit);
-  process.on("SIGTERM", exit);
+  bindProcessSignals(controller);
 
   try {
-    const output = await handler.run(payload.task.input, {
-      task: {
-        id: payload.task.id,
-        kind: payload.task.kind,
-        attempt: payload.task.attempt,
-        maxAttempts: payload.task.maxAttempts,
-        metadata: payload.task.metadata,
-        channels: payload.task.channels || [],
-        dedupeKey: payload.task.dedupeKey ?? null,
-        supersedeKey: payload.task.supersedeKey ?? null,
-      },
-      signal: controller.signal,
-      async setProgress(input) {
-        emit({
-          type: "progress",
-          progress: {
-            percent: clampPercent(input.percent),
-            label: input.label ?? null,
-            meta: input.meta ?? null,
-          },
-        });
-      },
-      async appendStep(input) {
-        emit({
-          type: "step",
-          step: {
-            kind: input.kind ?? "step",
-            level: input.level ?? "info",
-            message: input.message || input.label || "step",
-            meta: input.meta ?? null,
-            percent: clampPercent(input.percent ?? input.progressPercent),
-          },
-        });
-      },
-    });
-
     emit({
       type: "result",
-      output,
+      output: await handler.run(payload.task.input, createHandlerContext(payload, controller.signal)),
     });
   } catch (error) {
     emit({
@@ -133,6 +87,64 @@ async function main(): Promise<void> {
     });
     process.exitCode = 1;
   }
+}
+
+function readWorkerPayload(): ChildWorkerPayload {
+  const encoded = process.env.TB_TASK_CHILD_PAYLOAD;
+  if (!encoded) {
+    throw new Error("Missing TB_TASK_CHILD_PAYLOAD");
+  }
+
+  return JSON.parse(encoded) as ChildWorkerPayload;
+}
+
+async function loadWorkerHandler(payload: ChildWorkerPayload): Promise<TaskHandlerModule> {
+  const mod = await import(payload.handler.module);
+  return resolveHandlerExport(mod as Record<string, unknown>, payload.handler.export);
+}
+
+function bindProcessSignals(controller: AbortController): void {
+  const exit = () => controller.abort();
+  process.on("SIGINT", exit);
+  process.on("SIGTERM", exit);
+}
+
+function createHandlerContext(payload: ChildWorkerPayload, signal: AbortSignal) {
+  return {
+    task: {
+      id: payload.task.id,
+      kind: payload.task.kind,
+      attempt: payload.task.attempt,
+      maxAttempts: payload.task.maxAttempts,
+      metadata: payload.task.metadata,
+      channels: payload.task.channels || [],
+      dedupeKey: payload.task.dedupeKey ?? null,
+      supersedeKey: payload.task.supersedeKey ?? null,
+    },
+    signal,
+    async setProgress(input) {
+      emit({
+        type: "progress",
+        progress: {
+          percent: clampPercent(input.percent),
+          label: input.label ?? null,
+          meta: input.meta ?? null,
+        },
+      });
+    },
+    async appendStep(input) {
+      emit({
+        type: "step",
+        step: {
+          kind: input.kind ?? "step",
+          level: input.level ?? "info",
+          message: input.message || input.label || "step",
+          meta: input.meta ?? null,
+          percent: clampPercent(input.percent ?? input.progressPercent),
+        },
+      });
+    },
+  };
 }
 
 void main();
