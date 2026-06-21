@@ -1,0 +1,63 @@
+{
+  "name": "@trebired/tasks",
+  "version": "0.1.0",
+  "description": "Durable background task host for Bun and Node.js with persisted task records, progress, retries, dedupe, recovery, and pluggable executors.",
+  "license": "MIT",
+  "keywords": [
+    "tasks",
+    "queue",
+    "jobs",
+    "background-jobs",
+    "postgres",
+    "node",
+    "bun"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Trebired/tasks"
+  },
+  "bugs": {
+    "url": "https://github.com/Trebired/tasks/issues"
+  },
+  "homepage": "https://github.com/Trebired/tasks#readme",
+  "type": "module",
+  "engines": {
+    "node": ">=18",
+    "bun": ">=1.0.0"
+  },
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "packageManager": "bun@1.3.12",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "demo": "bun run examples/postgres_child_process.ts",
+    "prepublishOnly": "bun run typecheck && bun test && bun run build",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@trebired/logger-adapter": "^0.2.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.4",
+    "@types/node": "^24.10.1",
+    "pg": "^8.16.3",
+    "typescript": "^6.0.2"
+  }
+}
