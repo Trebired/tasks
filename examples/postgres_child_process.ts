@@ -46,7 +46,7 @@ async function main() {
     }
 
     if (event.type === "task:step") {
-      console.log("step", event.taskId, event.step?.label);
+      console.log("step", event.taskId, event.step?.message);
     }
 
     if (event.type === "task:succeeded") {

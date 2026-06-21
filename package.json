@@ -1,8 +1,79 @@
 {
-  "name": "@trebired/tasks",
-  "version": "0.1.0",
+  "bugs": {
+    "url": "https://github.com/Trebired/tasks/issues"
+  },
+  "dependencies": {
+    "@trebired/logger-adapter": "^0.2.0"
+  },
   "description": "Durable background task host for Bun and Node.js with persisted task records, progress, retries, dedupe, recovery, and pluggable executors.",
-  "license": "MIT",
+  "devDependencies": {
+    "@trebired/code-discipline": "^2.1.1",
+    "@types/bun": "^1.3.4",
+    "@types/node": "^24.10.1",
+    "pg": "^8.16.3",
+    "typescript": "^6.0.2"
+  },
+  "engines": {
+    "bun": ">=1.0.0",
+    "node": ">=18"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md"
+  ],
+  "homepage": "https://github.com/Trebired/tasks#readme",
+  "imports": {
+    "#2kjvrax0gr4m": "./src/types.ts",
+    "#4xg12aru9hri": "./src/live/tracker.ts",
+    "#54ms815v3mol": "./src/executor/child/process_worker.ts",
+    "#5dtdwzlie8fm": "./src/constants.ts",
+    "#6hgrn69s91pw": "./src/handler.ts",
+    "#78t73r76gox8": "./src/core/retry.ts",
+    "#8esv3y30elil": "./src/backend/utils/normalize.ts",
+    "#8t8bq600b4wu": "./src/index.ts",
+    "#dagzoln5nq38": "./src/core/emitter.ts",
+    "#dt78y5c38qmz": "./src/executor/child/process.ts",
+    "#ekwfcm811ffj": "./src/storage/postgres.ts",
+    "#ir9grtwyf3f1": "./src/core/snapshot.ts",
+    "#mfyxk9qyprji": "./src/backend/utils/time.ts",
+    "#mxw6vdowgo5u": "./src/backend/utils/object.ts",
+    "#pkwdsiow3z0r": "./src/core/host.ts",
+    "#q4zqk1pa2bf3": "./src/live/hub.ts",
+    "#qysd2ddsh0x8": "./src/core/utils.ts",
+    "#tlmmwtup61ur": "./src/frontend/js/utils/text.ts",
+    "#uoebp0pptz9i": "./src/core/lifecycle.ts",
+    "#xx6ozac2scdj": "./src/core/channels.ts",
+    "#yufkriqjbdny": "./src/live/socket_io.ts",
+    "#ebe51631bc41": "./internal/backend/utils/normalize.ts",
+    "#d66a914eb693": "./internal/backend/utils/object.ts",
+    "#87337d1a79d6": "./internal/backend/utils/time.ts",
+    "#0bba403f3e43": "./internal/constants.ts",
+    "#8942387ee1fc": "./internal/core/channels.ts",
+    "#cc76e7b18894": "./internal/core/emitter.ts",
+    "#b7dab5b5b35e": "./internal/core/host.ts",
+    "#b3d930a4472b": "./internal/core/lifecycle.ts",
+    "#9cba595a238d": "./internal/core/retry.ts",
+    "#657abf96f340": "./internal/core/snapshot.ts",
+    "#92c6666f713d": "./internal/core/utils.ts",
+    "#4bd798a4d972": "./internal/executor/child/process.ts",
+    "#d28441ffa4df": "./internal/executor/child/process_worker.ts",
+    "#9652e5354aa6": "./internal/frontend/js/utils/text.ts",
+    "#bcca6b017a35": "./internal/handler.ts",
+    "#fcd73bf294d5": "./internal/index.ts",
+    "#a9f2fec2aeaf": "./internal/live/hub.ts",
+    "#7323401cd694": "./internal/live/socket_io.ts",
+    "#a02b8941b739": "./internal/live/tracker.ts",
+    "#5b0505fd2b8d": "./internal/storage/postgres.ts",
+    "#3c8d8166992a": "./internal/types.ts"
+  },
   "keywords": [
     "tasks",
     "queue",
@@ -12,38 +83,18 @@
     "node",
     "bun"
   ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Trebired/tasks"
-  },
-  "bugs": {
-    "url": "https://github.com/Trebired/tasks/issues"
-  },
-  "homepage": "https://github.com/Trebired/tasks#readme",
-  "type": "module",
-  "engines": {
-    "node": ">=18",
-    "bun": ">=1.0.0"
-  },
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "name": "@trebired/tasks",
+  "packageManager": "bun@1.3.12",
   "private": false,
   "publishConfig": {
     "access": "public"
   },
-  "packageManager": "bun@1.3.12",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    }
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Trebired/tasks"
   },
-  "files": [
-    "dist",
-    "CHANGELOG.md",
-    "LICENSE",
-    "README.md"
-  ],
   "scripts": {
     "build": "rm -rf dist && tsc -p tsconfig.build.json",
     "demo": "bun run examples/postgres_child_process.ts",
@@ -51,13 +102,7 @@
     "test": "bun test",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {
-    "@trebired/logger-adapter": "^0.2.0"
-  },
-  "devDependencies": {
-    "@types/bun": "^1.3.4",
-    "@types/node": "^24.10.1",
-    "pg": "^8.16.3",
-    "typescript": "^6.0.2"
-  }
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "version": "0.1.1"
 }

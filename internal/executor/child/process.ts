@@ -93,6 +93,9 @@ function createChildProcessTaskExecutor(options: ChildProcessTaskExecutorOptions
             attempt: request.task.attempt,
             maxAttempts: request.task.maxAttempts,
             metadata: request.task.metadata ?? null,
+            channels: request.task.channels || [],
+            dedupeKey: request.task.dedupeKey ?? null,
+            supersedeKey: request.task.supersedeKey ?? null,
             input: request.task.input,
           },
           handler: {

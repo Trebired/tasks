@@ -11,7 +11,8 @@ export default defineTaskHandler<{ reportId: string }, { outputPath: string }>({
     });
 
     await context.appendStep({
-      label: `Preparing report ${input.reportId}`,
+      message: `Preparing report ${input.reportId}`,
+      level: "info",
     });
 
     await new Promise((resolve) => setTimeout(resolve, 250));
@@ -24,8 +25,9 @@ export default defineTaskHandler<{ reportId: string }, { outputPath: string }>({
     await new Promise((resolve) => setTimeout(resolve, 250));
 
     await context.appendStep({
-      label: "Report persisted",
-      progressPercent: 100,
+      message: "Report persisted",
+      level: "success",
+      percent: 100,
     });
 
     return {

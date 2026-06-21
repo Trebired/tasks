@@ -10,6 +10,9 @@ type ChildWorkerPayload = {
     attempt: number;
     maxAttempts: number;
     metadata: Record<string, unknown> | null;
+    channels?: string[];
+    dedupeKey?: string | null;
+    supersedeKey?: string | null;
     input: unknown;
   };
   handler: {
@@ -30,10 +33,11 @@ type ChildWorkerMessage =
   | {
     type: "step";
     step: {
-      kind?: "step" | "event";
-      label: string;
+      kind?: "step" | "event" | "checkpoint" | "log" | string;
+      level?: string;
+      message: string;
       meta?: Record<string, unknown> | null;
-      progressPercent?: number | null;
+      percent?: number | null;
     };
   }
   | {
@@ -89,6 +93,9 @@ async function main(): Promise<void> {
         attempt: payload.task.attempt,
         maxAttempts: payload.task.maxAttempts,
         metadata: payload.task.metadata,
+        channels: payload.task.channels || [],
+        dedupeKey: payload.task.dedupeKey ?? null,
+        supersedeKey: payload.task.supersedeKey ?? null,
       },
       signal: controller.signal,
       async setProgress(input) {
@@ -106,9 +113,10 @@ async function main(): Promise<void> {
           type: "step",
           step: {
             kind: input.kind ?? "step",
-            label: input.label,
+            level: input.level ?? "info",
+            message: input.message || input.label || "step",
             meta: input.meta ?? null,
-            progressPercent: clampPercent(input.progressPercent),
+            percent: clampPercent(input.percent ?? input.progressPercent),
           },
         });
       },

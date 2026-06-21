@@ -1,30 +1,159 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
+    "allowJs": false,
+    "allowSyntheticDefaultImports": true,
+    "checkJs": false,
+    "esModuleInterop": true,
     "lib": [
       "ES2020"
     ],
-    "strict": false,
-    "allowJs": false,
-    "checkJs": false,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "noEmit": true,
+    "paths": {
+      "#2kjvrax0gr4m": [
+        "./src/types.ts"
+      ],
+      "#4xg12aru9hri": [
+        "./src/live/tracker.ts"
+      ],
+      "#54ms815v3mol": [
+        "./src/executor/child/process_worker.ts"
+      ],
+      "#5dtdwzlie8fm": [
+        "./src/constants.ts"
+      ],
+      "#6hgrn69s91pw": [
+        "./src/handler.ts"
+      ],
+      "#78t73r76gox8": [
+        "./src/core/retry.ts"
+      ],
+      "#8esv3y30elil": [
+        "./src/backend/utils/normalize.ts"
+      ],
+      "#8t8bq600b4wu": [
+        "./src/index.ts"
+      ],
+      "#dagzoln5nq38": [
+        "./src/core/emitter.ts"
+      ],
+      "#dt78y5c38qmz": [
+        "./src/executor/child/process.ts"
+      ],
+      "#ekwfcm811ffj": [
+        "./src/storage/postgres.ts"
+      ],
+      "#ir9grtwyf3f1": [
+        "./src/core/snapshot.ts"
+      ],
+      "#mfyxk9qyprji": [
+        "./src/backend/utils/time.ts"
+      ],
+      "#mxw6vdowgo5u": [
+        "./src/backend/utils/object.ts"
+      ],
+      "#pkwdsiow3z0r": [
+        "./src/core/host.ts"
+      ],
+      "#q4zqk1pa2bf3": [
+        "./src/live/hub.ts"
+      ],
+      "#qysd2ddsh0x8": [
+        "./src/core/utils.ts"
+      ],
+      "#tlmmwtup61ur": [
+        "./src/frontend/js/utils/text.ts"
+      ],
+      "#uoebp0pptz9i": [
+        "./src/core/lifecycle.ts"
+      ],
+      "#xx6ozac2scdj": [
+        "./src/core/channels.ts"
+      ],
+      "#yufkriqjbdny": [
+        "./src/live/socket_io.ts"
+      ],
+      "#ebe51631bc41": [
+        "./internal/backend/utils/normalize.ts"
+      ],
+      "#d66a914eb693": [
+        "./internal/backend/utils/object.ts"
+      ],
+      "#87337d1a79d6": [
+        "./internal/backend/utils/time.ts"
+      ],
+      "#0bba403f3e43": [
+        "./internal/constants.ts"
+      ],
+      "#8942387ee1fc": [
+        "./internal/core/channels.ts"
+      ],
+      "#cc76e7b18894": [
+        "./internal/core/emitter.ts"
+      ],
+      "#b7dab5b5b35e": [
+        "./internal/core/host.ts"
+      ],
+      "#b3d930a4472b": [
+        "./internal/core/lifecycle.ts"
+      ],
+      "#9cba595a238d": [
+        "./internal/core/retry.ts"
+      ],
+      "#657abf96f340": [
+        "./internal/core/snapshot.ts"
+      ],
+      "#92c6666f713d": [
+        "./internal/core/utils.ts"
+      ],
+      "#4bd798a4d972": [
+        "./internal/executor/child/process.ts"
+      ],
+      "#d28441ffa4df": [
+        "./internal/executor/child/process_worker.ts"
+      ],
+      "#9652e5354aa6": [
+        "./internal/frontend/js/utils/text.ts"
+      ],
+      "#bcca6b017a35": [
+        "./internal/handler.ts"
+      ],
+      "#fcd73bf294d5": [
+        "./internal/index.ts"
+      ],
+      "#a9f2fec2aeaf": [
+        "./internal/live/hub.ts"
+      ],
+      "#7323401cd694": [
+        "./internal/live/socket_io.ts"
+      ],
+      "#a02b8941b739": [
+        "./internal/live/tracker.ts"
+      ],
+      "#5b0505fd2b8d": [
+        "./internal/storage/postgres.ts"
+      ],
+      "#3c8d8166992a": [
+        "./internal/types.ts"
+      ]
+    },
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "target": "ES2020",
     "types": [
       "node",
       "bun"
-    ],
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "resolveJsonModule": true,
-    "skipLibCheck": true
+    ]
   },
+  "exclude": [
+    "node_modules"
+  ],
   "include": [
+    "internal/**/*.ts",
     "examples/**/*.ts",
     "src/**/*.ts",
     "test/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules"
   ]
 }

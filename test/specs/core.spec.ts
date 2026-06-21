@@ -1,11 +1,16 @@
 import { describe, expect, test } from "bun:test";
 
 import {
-  createTaskHost,
-  defineTaskHandler,
   createPostgresTaskStoreSchema,
+  createTaskHost,
+  createTaskLiveHub,
+  createTaskLiveTracker,
+  defineTaskHandler,
+  taskChannel,
 } from "../../src/index.js";
+import { buildTaskAggregateSnapshot, createTaskSnapshot } from "../../src/core/snapshot.js";
 import type {
+  TaskAggregateSnapshot,
   TaskAppendStepInput,
   TaskCancelInput,
   TaskCancelRunningInput,
@@ -18,9 +23,11 @@ import type {
   TaskLeaseInput,
   TaskLeaseRenewalInput,
   TaskListQuery,
+  TaskMarkStaleInput,
   TaskRecord,
+  TaskRetentionPolicy,
+  TaskRetentionResult,
   TaskRetryInput,
-  TaskStaleRequeueInput,
   TaskStepListQuery,
   TaskStepRecord,
   TaskStore,
@@ -40,11 +47,26 @@ class MemoryTaskStore implements TaskStore {
           return {
             task,
             deduplicated: true,
+            disposition: "reused",
+            reusedTaskId: task.id,
+            supersededTaskIds: [],
           };
         }
       }
     }
 
+    const supersededTaskIds: string[] = [];
+    if (input.supersedeExisting && input.supersedeKey) {
+      for (const task of this.tasks.values()) {
+        if (task.kind === input.kind && task.supersedeKey === input.supersedeKey && ["queued", "claimed", "running"].includes(task.status)) {
+          task.status = "cancelled";
+          task.finishedAt = new Date().toISOString();
+          supersededTaskIds.push(task.id);
+        }
+      }
+    }
+
+    const createdAt = new Date().toISOString();
     const task: TaskRecord = {
       id: input.id,
       kind: input.kind,
@@ -58,11 +80,13 @@ class MemoryTaskStore implements TaskStore {
       progressMeta: null,
       concurrencyKey: input.concurrencyKey ?? null,
       dedupeKey: input.dedupeKey ?? null,
+      supersedeKey: input.supersedeKey ?? null,
+      channels: input.channels ?? [],
       attempt: 0,
       maxAttempts: input.maxAttempts,
       scheduledAt: input.scheduledAt,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt,
+      updatedAt: createdAt,
       claimedAt: null,
       startedAt: null,
       finishedAt: null,
@@ -71,11 +95,17 @@ class MemoryTaskStore implements TaskStore {
       leaseToken: null,
       leaseExpiresAt: null,
       lastHeartbeatAt: null,
+      retryScheduledAt: null,
+      staleAt: null,
+      staleReason: null,
     };
     this.tasks.set(task.id, task);
     return {
       task,
       deduplicated: false,
+      disposition: supersededTaskIds.length ? "superseded" : "created",
+      reusedTaskId: null,
+      supersededTaskIds,
     };
   }
 
@@ -83,8 +113,35 @@ class MemoryTaskStore implements TaskStore {
     return (this.tasks.get(taskId) || null) as TaskRecord<TInput, TResult> | null;
   }
 
-  async listTasks<TInput = unknown, TResult = unknown>(_query?: TaskListQuery): Promise<TaskRecord<TInput, TResult>[]> {
-    return [...this.tasks.values()] as TaskRecord<TInput, TResult>[];
+  async listTasks<TInput = unknown, TResult = unknown>(query: TaskListQuery = {}): Promise<TaskRecord<TInput, TResult>[]> {
+    let tasks = [...this.tasks.values()];
+    if (query.taskIds?.length) {
+      tasks = tasks.filter((task) => query.taskIds?.includes(task.id));
+    }
+    if (query.kinds?.length) {
+      tasks = tasks.filter((task) => query.kinds?.includes(task.kind));
+    }
+    if (query.statuses?.length) {
+      tasks = tasks.filter((task) => query.statuses?.includes(task.status));
+    }
+    if (query.channels?.length) {
+      tasks = tasks.filter((task) => [...task.channels, taskChannel.task(task.id), taskChannel.kind(task.kind)].some((channel) => query.channels?.includes(channel)));
+    }
+    if (query.dedupeKey) {
+      tasks = tasks.filter((task) => task.dedupeKey === query.dedupeKey);
+    }
+    if (query.concurrencyKey) {
+      tasks = tasks.filter((task) => task.concurrencyKey === query.concurrencyKey);
+    }
+    if (query.supersedeKey) {
+      tasks = tasks.filter((task) => task.supersedeKey === query.supersedeKey);
+    }
+    return tasks as TaskRecord<TInput, TResult>[];
+  }
+
+  async summarizeTasks(query: TaskListQuery = {}): Promise<TaskAggregateSnapshot> {
+    const tasks = await this.listTasks(query);
+    return buildTaskAggregateSnapshot(tasks.map((task) => createTaskSnapshot(task)));
   }
 
   async listTaskSteps(taskId: string, _query?: TaskStepListQuery): Promise<TaskStepRecord[]> {
@@ -113,6 +170,9 @@ class MemoryTaskStore implements TaskStore {
     task.claimedAt = new Date().toISOString();
     task.updatedAt = task.claimedAt;
     task.leaseExpiresAt = new Date(Date.now() + input.leaseMs).toISOString();
+    task.lastHeartbeatAt = task.claimedAt;
+    task.staleAt = null;
+    task.staleReason = null;
     return task as TaskRecord<TInput, TResult>;
   }
 
@@ -123,6 +183,9 @@ class MemoryTaskStore implements TaskStore {
     }
     task.status = "running";
     task.startedAt = task.startedAt || new Date().toISOString();
+    task.updatedAt = task.startedAt;
+    task.staleAt = null;
+    task.staleReason = null;
     return task as TaskRecord<TInput, TResult>;
   }
 
@@ -133,6 +196,9 @@ class MemoryTaskStore implements TaskStore {
     }
     task.lastHeartbeatAt = new Date().toISOString();
     task.leaseExpiresAt = new Date(Date.now() + input.leaseMs).toISOString();
+    task.updatedAt = task.lastHeartbeatAt;
+    task.staleAt = null;
+    task.staleReason = null;
     return task as TaskRecord<TInput, TResult>;
   }
 
@@ -142,13 +208,14 @@ class MemoryTaskStore implements TaskStore {
       return null;
     }
     const step: TaskStepRecord = {
-      sequence: String(++this.sequence),
+      id: String(++this.sequence),
       taskId: input.taskId,
       attempt: input.attempt,
       kind: input.kind ?? "step",
-      label: input.label,
+      level: input.level ?? "info",
+      message: input.message || input.label || "step",
       meta: input.meta ?? null,
-      progressPercent: input.progressPercent ?? null,
+      percent: input.percent ?? input.progressPercent ?? null,
       createdAt: input.createdAt || new Date().toISOString(),
     };
     const current = this.steps.get(input.taskId) || [];
@@ -165,6 +232,9 @@ class MemoryTaskStore implements TaskStore {
     task.progressPercent = input.percent ?? task.progressPercent;
     task.progressLabel = input.label ?? task.progressLabel;
     task.progressMeta = input.meta ?? task.progressMeta;
+    task.updatedAt = input.updatedAt || new Date().toISOString();
+    task.staleAt = null;
+    task.staleReason = null;
     return task as TaskRecord<TInput, TResult>;
   }
 
@@ -179,6 +249,9 @@ class MemoryTaskStore implements TaskStore {
     task.progressPercent = 100;
     task.leaseOwner = null;
     task.leaseToken = null;
+    task.retryScheduledAt = null;
+    task.staleAt = null;
+    task.staleReason = null;
     return task as TaskRecord<TInput, TResult>;
   }
 
@@ -192,6 +265,7 @@ class MemoryTaskStore implements TaskStore {
     task.finishedAt = new Date().toISOString();
     task.leaseOwner = null;
     task.leaseToken = null;
+    task.retryScheduledAt = null;
     return task as TaskRecord<TInput, TResult>;
   }
 
@@ -218,6 +292,7 @@ class MemoryTaskStore implements TaskStore {
     task.finishedAt = new Date().toISOString();
     task.leaseOwner = null;
     task.leaseToken = null;
+    task.retryScheduledAt = null;
     return task as TaskRecord<TInput, TResult>;
   }
 
@@ -229,19 +304,47 @@ class MemoryTaskStore implements TaskStore {
     task.status = "queued";
     task.error = input.error;
     task.scheduledAt = input.scheduledAt;
+    task.retryScheduledAt = input.scheduledAt;
     task.leaseOwner = null;
     task.leaseToken = null;
     return task as TaskRecord<TInput, TResult>;
   }
 
-  async requeueStaleTasks(_input?: TaskStaleRequeueInput): Promise<number> {
+  async markStaleTasks<TInput = unknown, TResult = unknown>(_input: TaskMarkStaleInput): Promise<TaskRecord<TInput, TResult>[]> {
+    const current = _input.now || new Date().toISOString();
+    const threshold = Date.parse(current) - _input.staleAfterMs;
+    const stale: TaskRecord[] = [];
+
+    for (const task of this.tasks.values()) {
+      const reference = Date.parse(task.lastHeartbeatAt || task.updatedAt);
+      if ((task.status === "claimed" || task.status === "running") && !task.staleAt && reference < threshold) {
+        task.staleAt = current;
+        task.staleReason = _input.reason || "Task became stale";
+        task.updatedAt = current;
+        stale.push(task);
+      }
+    }
+
+    return stale as TaskRecord<TInput, TResult>[];
+  }
+
+  async requeueStaleTasks(): Promise<number> {
     return 0;
+  }
+
+  async applyRetentionPolicy(_policy: TaskRetentionPolicy): Promise<TaskRetentionResult> {
+    return {
+      deletedTasks: 0,
+      deletedSteps: 0,
+      compactedTasks: 0,
+    };
   }
 }
 
 describe("@trebired/tasks", () => {
-  test("runs a queued task and persists progress and steps", async () => {
+  test("runs a queued task, exposes snapshots, and normalizes lifecycle events", async () => {
     const store = new MemoryTaskStore();
+    const lifecycleEvents: string[] = [];
 
     const executor: TaskExecutor = {
       async execute(request): Promise<TaskExecutionHandle> {
@@ -256,7 +359,9 @@ describe("@trebired/tasks", () => {
         await request.onEvent?.({
           type: "step",
           step: {
-            label: "Started unit of work",
+            message: "Started unit of work",
+            level: "info",
+            percent: 25,
           },
         });
 
@@ -291,11 +396,18 @@ describe("@trebired/tasks", () => {
         leaseMs: 100,
         globalConcurrency: 1,
       },
+      onLifecycleEvent(event) {
+        lifecycleEvents.push(event.event);
+      },
     });
 
     await tasks.start();
     const queued = await tasks.enqueue("demo.run", {
       id: "demo",
+    }, {
+      channels: [
+        taskChannel.scope("workspace:demo"),
+      ],
     });
 
     for (let index = 0; index < 50; index += 1) {
@@ -306,15 +418,199 @@ describe("@trebired/tasks", () => {
       await new Promise((resolve) => setTimeout(resolve, 10));
     }
 
-    const task = await tasks.getTask<{ id: string }, { ok: boolean }>(queued.task.id);
-    const steps = await tasks.listTaskSteps(queued.task.id);
+    const snapshot = await tasks.readSnapshot<{ id: string }, { ok: boolean }>(queued.task.id, {
+      includeSteps: 10,
+    });
+    const aggregate = await tasks.readAggregate();
 
-    expect(task?.status).toBe("succeeded");
-    expect(task?.progressPercent).toBe(100);
-    expect(task?.output?.ok).toBe(true);
-    expect(steps).toHaveLength(1);
+    expect(snapshot?.state).toBe("succeeded");
+    expect(snapshot?.progress.percent).toBe(100);
+    expect(snapshot?.steps).toHaveLength(1);
+    expect(snapshot?.steps?.[0]?.message).toBe("Started unit of work");
+    expect(snapshot?.channels.includes(taskChannel.task(queued.task.id))).toBe(true);
+    expect(aggregate.byState.succeeded).toBe(1);
+    expect(lifecycleEvents.includes("progress")).toBe(true);
+    expect(lifecycleEvents.includes("step")).toBe(true);
+    expect(lifecycleEvents[lifecycleEvents.length - 1]).toBe("succeeded");
 
     await tasks.stop();
+  });
+
+  test("bootstraps live state and tracks later updates", async () => {
+    const store = new MemoryTaskStore();
+    const executor: TaskExecutor = {
+      async execute(request): Promise<TaskExecutionHandle> {
+        await request.onEvent?.({
+          type: "step",
+          step: {
+            message: "phase one",
+            level: "info",
+            percent: 50,
+          },
+        });
+
+        return {
+          async cancel() {
+            return;
+          },
+          completion: new Promise((resolve) => {
+            setTimeout(() => {
+              resolve({
+                status: "succeeded",
+                output: {
+                  done: true,
+                },
+              });
+            }, 25);
+          }),
+        };
+      },
+    };
+
+    const tasks = createTaskHost({
+      store,
+      executor,
+      handlers: [
+        {
+          kind: "demo.live",
+          entrypoint: {
+            module: new URL("../../examples/handlers/report_task.ts", import.meta.url),
+          },
+        },
+      ],
+      runner: {
+        pollIntervalMs: 10,
+        heartbeatMs: 20,
+        leaseMs: 100,
+        globalConcurrency: 1,
+      },
+    });
+
+    await tasks.start();
+    const queued = await tasks.enqueue("demo.live", {
+      id: "live",
+    }, {
+      channels: [
+        taskChannel.scope("workspace:live"),
+      ],
+    });
+
+    const hub = createTaskLiveHub(tasks);
+    const tracker = createTaskLiveTracker();
+    const unsubscribe = await hub.subscribe({
+      channels: [
+        taskChannel.scope("workspace:live"),
+      ],
+      recentSteps: 10,
+    }, (message) => {
+      tracker.apply(message);
+    });
+
+    for (let index = 0; index < 50; index += 1) {
+      const state = tracker.getState();
+      const snapshot = state.snapshots.find((value) => value.taskId === queued.task.id);
+      if (snapshot?.state === "succeeded") {
+        break;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    }
+
+    const state = tracker.getState();
+    const snapshot = state.snapshots.find((value) => value.taskId === queued.task.id);
+
+    expect(snapshot?.state).toBe("succeeded");
+    expect(state.steps[queued.task.id]?.[0]?.message).toBe("phase one");
+    expect(state.aggregate?.byState.succeeded).toBe(1);
+
+    unsubscribe();
+    await tasks.stop();
+  });
+
+  test("marks long-running work as stale through the package-owned stale model", async () => {
+    const store = new MemoryTaskStore();
+    const queued = await store.createTask({
+      id: "stale-task",
+      kind: "demo.stale",
+      input: {
+        id: "stale",
+      },
+      maxAttempts: 1,
+      scheduledAt: new Date().toISOString(),
+    });
+
+    const claimed = await store.claimNextTask({
+      runnerId: "runner-1",
+      leaseMs: 1_000,
+      kinds: ["demo.stale"],
+    });
+
+    expect(claimed?.status).toBe("claimed");
+
+    if (claimed) {
+      claimed.status = "running";
+      claimed.updatedAt = new Date(Date.now() - 10_000).toISOString();
+      claimed.lastHeartbeatAt = new Date(Date.now() - 10_000).toISOString();
+      store.tasks.set(claimed.id, claimed);
+    }
+
+    const stale = await store.markStaleTasks({
+      staleAfterMs: 1_000,
+      now: new Date().toISOString(),
+      reason: "watchdog timeout",
+    });
+
+    const staleSnapshot = createTaskSnapshot(stale[0]);
+
+    expect(queued.disposition).toBe("created");
+    expect(stale).toHaveLength(1);
+    expect(staleSnapshot.state).toBe("stale");
+    expect(staleSnapshot.progress.staleReason).toBe("watchdog timeout");
+  });
+
+  test("surfaces dedupe reuse and supersedence explicitly", async () => {
+    const store = new MemoryTaskStore();
+    const tasks = createTaskHost({
+      store,
+    });
+
+    const first = await tasks.enqueue("demo.dedupe", {
+      id: 1,
+    }, {
+      dedupeKey: "same",
+      supersedeKey: "same",
+      channels: [
+        taskChannel.scope("demo"),
+      ],
+    });
+
+    const second = await tasks.enqueue("demo.dedupe", {
+      id: 2,
+    }, {
+      dedupeKey: "same",
+      channels: [
+        taskChannel.scope("demo"),
+      ],
+    });
+
+    const replacement = await tasks.enqueue("demo.replace", {
+      id: 3,
+    }, {
+      supersedeKey: "replace",
+    });
+
+    const replaced = await tasks.enqueue("demo.replace", {
+      id: 4,
+    }, {
+      supersedeKey: "replace",
+      supersedeExisting: true,
+    });
+
+    expect(first.disposition).toBe("created");
+    expect(second.disposition).toBe("reused");
+    expect(second.reusedTaskId).toBe(first.task.id);
+    expect(replacement.disposition).toBe("created");
+    expect(replaced.disposition).toBe("superseded");
+    expect(replaced.supersededTaskIds).toHaveLength(1);
   });
 
   test("defines handlers and builds postgres schema sql", () => {
@@ -334,5 +630,7 @@ describe("@trebired/tasks", () => {
     expect(typeof handler.run).toBe("function");
     expect(sql.includes("create schema if not exists")).toBe(true);
     expect(sql.includes("\"app\".\"tb_tasks\"")).toBe(true);
+    expect(sql.includes("supersede_key")).toBe(true);
+    expect(sql.includes("channels jsonb")).toBe(true);
   });
 });

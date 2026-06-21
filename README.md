@@ -1,24 +1,32 @@
 # @trebired/tasks
 
-Durable background task host for Bun and Node.js applications.
+Durable background task host for Bun and Node.js applications, with built-in progress state, step replay, live subscription bootstrap, stale detection, and pluggable execution backends.
 
-`@trebired/tasks` gives a host application ownership over a real persisted task engine:
+`@trebired/tasks` is the generic Trebired package for hosts that need real background work outside the request path without rebuilding the whole task observability layer around it later.
 
-- queued, claimed, running, succeeded, failed, and cancelled task states
-- durable task records and ordered progress steps
-- retries, attempt tracking, lease heartbeats, and stale recovery
-- dedupe and concurrency controls
-- pluggable execution backends
-- a default child-process executor that works cleanly across Node and Bun hosts
+It owns:
 
-It is intentionally generic. It does not know about apps, deployments, repositories, agents, UI frameworks, sockets, or product-specific entity models.
+- durable task records
+- claiming, leasing, heartbeats, retries, and stale recovery
+- normalized progress state
+- ordered task steps
+- snapshot and replay reads
+- aggregate task state
+- normalized lifecycle events
+- live subscribe-plus-bootstrap flows
+- optional transport and client-side helpers
+
+It stays intentionally generic.
+
+It does not know about products, deployments, repositories, publications, agents, server panels, or app-specific UI wording.
 
 In plain terms:
 
-- it is a durable task infrastructure layer you embed into your host
-- it is not a product-specific job catalog
+- it is a durable task infrastructure and observability layer you embed into your host
+- it is not a hosted queue service
 - it is not tied to Redis
 - it is not built around worker threads or Piscina
+- it does not force Socket.IO, React, or a specific web framework into the core
 
 ## Install
 
@@ -49,7 +57,9 @@ export default defineTaskHandler<{ reportId: string }, { outputPath: string }>({
     });
 
     await context.appendStep({
-      label: `Preparing report ${input.reportId}`,
+      level: "info",
+      message: `Preparing report ${input.reportId}`,
+      percent: 10,
     });
 
     await new Promise((resolve) => setTimeout(resolve, 500));
@@ -69,7 +79,7 @@ export default defineTaskHandler<{ reportId: string }, { outputPath: string }>({
 });
 ```
 
-Create a Postgres-backed host and start the runner:
+Create a Postgres-backed host and start a runner:
 
 ```ts
 import { Pool } from "pg";
@@ -77,6 +87,7 @@ import {
   createPostgresTaskStore,
   createPostgresTaskStoreSchema,
   createTaskHost,
+  taskChannel,
 } from "@trebired/tasks";
 
 const pool = new Pool({
@@ -105,6 +116,7 @@ const tasks = createTaskHost({
   ],
   runner: {
     globalConcurrency: 4,
+    watchdogMs: 60_000,
   },
 });
 
@@ -115,75 +127,50 @@ const queued = await tasks.enqueue("report.generate", {
 }, {
   dedupeKey: "report:rpt_42",
   concurrencyKey: "report:rpt_42",
+  channels: [
+    taskChannel.scope("workspace:42"),
+    taskChannel.scope("reports"),
+  ],
 });
 
-console.log(queued.task.id, queued.deduplicated);
+console.log(queued.task.id, queued.disposition);
 ```
 
-Read task state and ordered steps through the host:
+Read the current snapshot and recent steps:
 
 ```ts
-const task = await tasks.getTask(queued.task.id);
-const steps = await tasks.listTaskSteps(queued.task.id);
+const snapshot = await tasks.readSnapshot(queued.task.id, {
+  includeSteps: 20,
+});
 
-console.log(task?.status, task?.progressPercent, steps.length);
+console.log(snapshot?.state, snapshot?.progress.percent, snapshot?.steps?.length);
 ```
 
 ## Lifecycle And Ownership Model
 
-The package owns the task engine and the task state machine.
+The host still owns:
 
-The host owns:
-
-- which task kinds exist
-- which handlers are registered
-- which storage adapter is used
-- when runners start and stop
-- how progress is surfaced to HTTP, websockets, polling, logs, or custom transports
+- what each task kind actually does
+- which permissions gate enqueue or subscribe access
+- how task state is rendered in UI
+- whether lifecycle data is mirrored into logs, metrics, or app-specific diagnostics
 
 The package owns:
 
-- task records
-- leasing and heartbeats
-- stale lease recovery
-- retry scheduling
-- concurrency and dedupe checks
-- progress snapshots and ordered step persistence
-- executor abstraction and execution lifecycle
+- task state transitions
+- durable progress state
+- step persistence and replay
+- dedupe and supersedence mechanics
+- live lifecycle normalization
+- snapshot bootstrap for current state
+- stale/watchdog state
+- retention helpers
 
-That split is deliberate. `@trebired/tasks` is meant to be the durable infrastructure underneath host-owned product behavior, not a replacement for product behavior.
-
-## What The Main Host API Looks Like
-
-Create one host:
-
-```ts
-import { createTaskHost } from "@trebired/tasks";
-
-const tasks = createTaskHost({
-  store,
-  handlers,
-});
-```
-
-Main methods:
-
-- `tasks.start()`
-- `tasks.stop()`
-- `tasks.registerHandler(handler)`
-- `tasks.enqueue(kind, input, options?)`
-- `tasks.getTask(taskId)`
-- `tasks.listTasks(query?)`
-- `tasks.listTaskSteps(taskId, query?)`
-- `tasks.cancel(taskId, reason?)`
-- `tasks.onEvent(listener)`
-- `tasks.getState()`
-
-The host event stream is intentionally generic. It can be wired into logs, polling invalidation, websocket fanout, SSE, or any other host transport without the package needing to know about that transport.
+That split is deliberate. Apps should not need to rebuild generic task observability every time they add progress panels or live dashboards.
 
 ## Task Model
 
-The built-in state model is:
+The persisted task record still has the core durable states:
 
 - `queued`
 - `claimed`
@@ -192,23 +179,392 @@ The built-in state model is:
 - `failed`
 - `cancelled`
 
-Each task record stores:
+On top of that, the package now exposes a first-class lifecycle/progress state model:
 
-- `kind`
-- `input`
-- `output`
-- `error`
-- `attempt`
-- `maxAttempts`
-- `progressPercent`
-- `progressLabel`
-- `progressMeta`
-- `concurrencyKey`
-- `dedupeKey`
-- lease ownership and heartbeat timestamps
-- terminal timestamps and cancellation markers
+- `queued`
+- `claimed`
+- `running`
+- `retrying`
+- `succeeded`
+- `failed`
+- `cancelled`
+- `stale`
 
-Ordered steps are persisted separately and can be listed through `listTaskSteps()`.
+`retrying` and `stale` are package-owned lifecycle states that sit above the lower-level persisted status.
+
+That means a host can build UI against `snapshot.state` instead of reverse-engineering retry and stale semantics from multiple raw fields.
+
+## Progress Model
+
+Every snapshot includes a normalized progress contract:
+
+```ts
+type TaskProgressState = {
+  state: TaskLifecycleState;
+  percent: number | null;
+  label: string | null;
+  meta: Record<string, unknown> | null;
+  startedAt: string | null;
+  updatedAt: string | null;
+  finishedAt: string | null;
+  retryScheduledAt: string | null;
+  staleAt: string | null;
+  staleReason: string | null;
+  lastHeartbeatAt: string | null;
+};
+```
+
+Handlers update the task-facing parts of that model through:
+
+```ts
+await context.setProgress({
+  percent: 35,
+  label: "transcoding",
+  meta: {
+    frame: 1820,
+  },
+});
+```
+
+The engine owns the lifecycle-facing parts such as:
+
+- `state`
+- `startedAt`
+- `finishedAt`
+- `retryScheduledAt`
+- `staleAt`
+- `lastHeartbeatAt`
+
+## Steps Model
+
+Task steps are first-class persisted records, not just an app convention:
+
+```ts
+type TaskStepRecord = {
+  id: string;
+  taskId: string;
+  attempt: number;
+  kind: TaskStepKind;
+  level: TaskStepLevel;
+  message: string;
+  meta: Record<string, unknown> | null;
+  percent: number | null;
+  createdAt: string;
+};
+```
+
+Handlers append them through:
+
+```ts
+await context.appendStep({
+  level: "info",
+  kind: "checkpoint",
+  message: "Source downloaded",
+  percent: 20,
+});
+```
+
+These steps are normalized the same way whether they came from a child-process executor, a future custom executor, or host-owned testing infrastructure.
+
+## Snapshots, Replay, And Aggregate Reads
+
+The host now exposes package-owned read APIs for UI and dashboard usage:
+
+- `tasks.readSnapshot(taskId, { includeSteps? })`
+- `tasks.listSnapshots(query?)`
+- `tasks.readAggregate(query?)`
+- `tasks.bootstrap(query?)`
+
+That means an app can ask for:
+
+- the current task snapshot for a modal or detail panel
+- recent steps for replay
+- current aggregate counts for a dashboard
+- a bootstrap payload for subscribe-plus-live flows
+
+Example:
+
+```ts
+const bootstrap = await tasks.bootstrap({
+  channels: [
+    taskChannel.scope("workspace:42"),
+  ],
+  recentSteps: 25,
+});
+
+console.log(bootstrap.snapshots.length, bootstrap.aggregate?.byState.running);
+```
+
+## Channel And Scope Model
+
+`@trebired/tasks` now has a package-owned channel model for grouping tasks and subscriptions.
+
+Built-in helpers:
+
+```ts
+import { taskChannel } from "@trebired/tasks";
+
+taskChannel.task("task_42");
+taskChannel.kind("report.generate");
+taskChannel.dedupe("report:rpt_42");
+taskChannel.concurrency("report:rpt_42");
+taskChannel.supersede("scan:repo_7");
+taskChannel.scope("workspace:42");
+```
+
+Tasks can also carry extra host-defined channels directly:
+
+```ts
+await tasks.enqueue("report.generate", input, {
+  channels: [
+    taskChannel.scope("workspace:42"),
+    taskChannel.scope("sidebar"),
+  ],
+});
+```
+
+This keeps subscription routing generic and typed without forcing every app to invent its own free-form key naming scheme.
+
+## Live Subscription Model
+
+The package now ships a generic live hub for real-time UI flows:
+
+```ts
+import { createTaskLiveHub } from "@trebired/tasks";
+
+const hub = createTaskLiveHub(tasks);
+```
+
+Main methods:
+
+- `hub.bootstrap(query?)`
+- `hub.subscribe(query, listener)`
+
+The flow is intentionally explicit:
+
+1. client or transport subscribes with a query
+2. the listener immediately receives a bootstrap payload
+3. the listener then receives normalized live updates
+
+The messages are transport-neutral:
+
+```ts
+type TaskLiveMessage =
+  | {
+      type: "bootstrap";
+      query: TaskSubscriptionQuery;
+      snapshots: TaskSnapshot[];
+      steps: Record<string, TaskStepRecord[]>;
+      aggregate: TaskAggregateSnapshot | null;
+      timestamp: string;
+    }
+  | {
+      type: "event";
+      event: TaskLifecycleEvent;
+      timestamp: string;
+    };
+```
+
+## Normalized Lifecycle Events
+
+Apps no longer need to translate low-level host events into UI-friendly lifecycle updates.
+
+The host exposes:
+
+- `tasks.onEvent(listener)` for lower-level host events
+- `tasks.onLifecycleEvent(listener)` for normalized lifecycle events
+
+Lifecycle event names:
+
+- `enqueued`
+- `claimed`
+- `started`
+- `progress`
+- `step`
+- `retried`
+- `succeeded`
+- `failed`
+- `cancelled`
+- `stale`
+- `lease_lost`
+
+Each normalized event carries the current snapshot when one exists, plus the step record for step events.
+
+## Bootstrap Plus Replay Flow
+
+The preferred real-time flow is:
+
+1. build a query by task id, kind, or channels
+2. call `hub.subscribe(query, listener)`
+3. use the bootstrap snapshot immediately
+4. apply later live events on top
+
+Example:
+
+```ts
+const unsubscribe = await hub.subscribe({
+  channels: [
+    taskChannel.scope("workspace:42"),
+  ],
+  recentSteps: 50,
+}, (message) => {
+  if (message.type === "bootstrap") {
+    console.log(message.snapshots.length);
+    return;
+  }
+
+  console.log(message.event.event, message.event.snapshot?.progress.percent);
+});
+```
+
+That bootstrap-first model is package-owned specifically so apps do not need to invent one-off “give me current state, then also subscribe” protocols every time.
+
+## Tiny Client Helper
+
+For framework-agnostic client-side state, use:
+
+```ts
+import { createTaskLiveTracker } from "@trebired/tasks";
+
+const tracker = createTaskLiveTracker();
+
+await hub.subscribe(query, (message) => {
+  tracker.apply(message);
+});
+
+const state = tracker.getState();
+console.log(state.snapshots[0]?.progress.percent);
+```
+
+The tracker owns:
+
+- bootstrap application
+- later event application
+- snapshot replacement
+- step accumulation
+- aggregate refresh from current snapshots
+
+It stays intentionally small. It does not assume React, Vue, Svelte, or a browser runtime.
+
+## Optional Socket.IO Bridge
+
+The core live model does not hardcode Socket.IO.
+
+If a host already uses Socket.IO-style transport, `attachTaskLiveSocketBridge()` can wire the live hub into a socket server without pulling Socket.IO into the rest of the package model:
+
+```ts
+import {
+  attachTaskLiveSocketBridge,
+  createTaskLiveHub,
+} from "@trebired/tasks";
+
+const hub = createTaskLiveHub(tasks);
+
+attachTaskLiveSocketBridge(io, {
+  hub,
+  subscribeEvent: "tasks:subscribe",
+  publishEvent: "tasks:live",
+});
+```
+
+The bridge expects a Socket.IO-like shape through duck typing. The package does not require a direct runtime dependency on `socket.io`.
+
+## Dedupe And Supersedence
+
+Deduplication is now surfaced explicitly through the enqueue result:
+
+```ts
+const result = await tasks.enqueue("import.users", payload, {
+  dedupeKey: "import:users:2026-06-21",
+});
+
+console.log(result.disposition);
+```
+
+Possible enqueue dispositions:
+
+- `created`: a new task record was created
+- `reused`: an existing open task was reused
+- `superseded`: a new task was created and older matching active tasks were replaced
+
+Use supersedence when the newest task should replace older open work:
+
+```ts
+const result = await tasks.enqueue("scan.repository", payload, {
+  supersedeKey: "repo:42",
+  supersedeExisting: true,
+});
+
+console.log(result.supersededTaskIds);
+```
+
+This is useful for “already in progress” and “newer request replaced older request” UX without each app inventing its own semantics.
+
+## Stale And Watchdog Behavior
+
+The package now owns stale/watchdog mechanics too.
+
+Runner options:
+
+```ts
+const tasks = createTaskHost({
+  store,
+  runner: {
+    watchdogMs: 60_000,
+    watchdogScanIntervalMs: 5_000,
+  },
+});
+```
+
+What that means:
+
+- if a claimed or running task stops reporting heartbeat or progress for too long, it can become `stale`
+- stale state is reflected in snapshots through `progress.staleAt` and `progress.staleReason`
+- normalized lifecycle can emit `stale`
+- expired leases can still be requeued separately through the durable recovery path
+
+In practice this lets UIs show:
+
+- “still running”
+- “retry scheduled”
+- “stale, runner may be gone”
+
+without app-owned timeout heuristics.
+
+## Persistence Policy Helpers
+
+The store now exposes a package-owned retention interface:
+
+```ts
+await tasks.compact({
+  successTtlMs: 7 * 24 * 60 * 60 * 1000,
+  failedTtlMs: 30 * 24 * 60 * 60 * 1000,
+  stepLimitPerTask: 200,
+  keepLatestSuccessesPerKind: 20,
+  keepLatestFailuresPerKind: 20,
+});
+```
+
+Runner-managed automatic compaction is also supported through:
+
+```ts
+const tasks = createTaskHost({
+  store,
+  runner: {
+    retentionPolicy: {
+      successTtlMs: 7 * 24 * 60 * 60 * 1000,
+      stepLimitPerTask: 200,
+    },
+    retentionScanIntervalMs: 60_000,
+  },
+});
+```
+
+This covers generic retention concerns such as:
+
+- step history limits
+- TTL-based cleanup
+- keeping only recent successes or failures per kind
 
 ## Storage Adapter Model
 
@@ -235,221 +591,164 @@ const store = createPostgresTaskStore({
 });
 ```
 
-The first adapter targets `pg`-style pool objects with:
+The first adapter targets `pg`-style pools with:
 
 - `query(sql, params?)`
 - `connect()`
 - pooled client `release()`
 
-That keeps the task engine generic while still giving the Postgres adapter real transaction ownership for claim, lease, and dedupe behavior.
-
-The store contract owns:
-
-- create task
-- read task
-- list/query tasks
-- claim next task with lease
-- renew lease heartbeat
-- append ordered steps
-- update progress snapshot
-- mark succeeded
-- mark failed
-- cancel or mark cancelled
-- retry requeue
-- stale recovery requeue
-- dedupe lookup
-
-## Concurrency And Dedupe
-
-The engine supports three separate controls:
-
-- global runner concurrency through `runner.globalConcurrency`
-- per-kind concurrency through `handler.concurrency.limit`
-- per-key serialization through `enqueue(..., { concurrencyKey })`
-
-Use `dedupeKey` when a host wants repeat enqueue attempts to collapse onto one open task record:
-
-```ts
-const queued = await tasks.enqueue("import.users", payload, {
-  dedupeKey: "import:users:2026-06-21",
-});
-
-if (queued.deduplicated) {
-  console.log("existing open task reused", queued.task.id);
-}
-```
-
-`concurrencyKey` is separate from `dedupeKey` on purpose:
-
-- `dedupeKey` prevents duplicate open tasks
-- `concurrencyKey` allows multiple tasks to exist while still forcing one-at-a-time execution for the same resource key
-
-## Progress And Recovery Behavior
-
-Task handlers report progress through the context they receive at execution time:
-
-```ts
-await context.setProgress({
-  percent: 35,
-  label: "transcoding",
-  meta: {
-    frame: 1820,
-  },
-});
-
-await context.appendStep({
-  label: "Source downloaded",
-});
-```
-
-The engine persists:
-
-- latest progress snapshot
-- ordered steps/events
-- attempt count
-- last structured error
-- terminal structured result
-
-Recovery behavior includes:
-
-- lease heartbeats while work is running
-- stale lease detection and requeue after host restart or crash
-- retry scheduling with `maxAttempts`
-- simple exponential backoff by default when `retry.maxAttempts > 1`
-- custom retry scheduling through `retry.backoff`
+That keeps claim and lease behavior transaction-owned instead of pretending a stateless query function is enough for a durable task engine.
 
 ## Executor Model
 
-The core engine does not assume worker threads.
+The core engine still does not assume worker threads.
 
-Execution is abstracted behind a `TaskExecutor` contract, and the first implementation is `createChildProcessTaskExecutor()`. That is the default used by `createTaskHost()` when you do not pass a custom executor.
+Execution is abstracted behind `TaskExecutor`, and the default remains `createChildProcessTaskExecutor()`.
 
 Why child process first:
 
-- it works in both Bun and Node hosts without making worker-thread behavior the package boundary
-- it isolates crashes and heavy work better than in-process execution
-- it keeps the handler contract module-based and runtime-agnostic
-- it does not force a Piscina dependency into Bun-first or mixed-runtime hosts
+- it works cleanly across Bun and Node hosts
+- it keeps the package boundary runtime-agnostic
+- it isolates heavy work and crashes better than in-process execution
+- it avoids making Node-specific worker-thread behavior the default mental model
 
-Why Piscina is not the core architecture:
+Why Piscina is still only a future optional adapter:
 
-- Piscina is a good future adapter for Node-specific worker-thread use cases
-- worker threads are not available with the same assumptions across Bun and Node
-- making Piscina the core would leak Node-specific execution decisions into the package model
+- Piscina is useful for Node-specific worker-thread workloads
+- Bun and Node do not share the same worker-thread assumptions
+- making Piscina the core would leak a runtime-specific execution choice into the package’s main API
 
-In other words, child process is the conservative default because it preserves portability at the package boundary. Piscina can fit later as an optional executor adapter without redefining the package.
+In other words, child process is the conservative generic default. Piscina can fit later as an adapter without redefining the package.
 
-## Handler Module Contract
+## Core API
 
-Handlers are module-backed on purpose. That makes them usable by the default child-process executor and by future executors that also want importable task modules.
+Main host entrypoint:
 
 ```ts
-import { defineTaskHandler } from "@trebired/tasks";
+import { createTaskHost } from "@trebired/tasks";
 
-export const imageResizeTask = defineTaskHandler({
-  async run(input, context) {
-    await context.appendStep({
-      label: "resize starting",
-    });
-
-    return resizeImage(input, context.signal);
-  },
+const tasks = createTaskHost({
+  store,
+  handlers,
 });
 ```
 
-Register the handler with a kind and entrypoint:
+Main methods:
+
+- `tasks.start()`
+- `tasks.stop()`
+- `tasks.registerHandler(handler)`
+- `tasks.enqueue(kind, input, options?)`
+- `tasks.getTask(taskId)`
+- `tasks.listTasks(query?)`
+- `tasks.listTaskSteps(taskId, query?)`
+- `tasks.readSnapshot(taskId, options?)`
+- `tasks.listSnapshots(query?)`
+- `tasks.readAggregate(query?)`
+- `tasks.bootstrap(query?)`
+- `tasks.cancel(taskId, reason?)`
+- `tasks.compact(policy?)`
+- `tasks.onEvent(listener)`
+- `tasks.onLifecycleEvent(listener)`
+- `tasks.getState()`
+
+## Progress Bar Example
+
+For a progress bar, the snapshot model is enough:
 
 ```ts
-tasks.registerHandler({
-  kind: "image.resize",
-  entrypoint: {
-    module: new URL("./tasks/image_resize.ts", import.meta.url),
-    export: "imageResizeTask",
-  },
-  retry: {
-    maxAttempts: 3,
-  },
+const snapshot = await tasks.readSnapshot(taskId);
+
+const percent = snapshot?.progress.percent ?? 0;
+const label = snapshot?.progress.label || snapshot?.state || "queued";
+```
+
+With live updates:
+
+```ts
+await hub.subscribe({
+  taskIds: [taskId],
+}, (message) => {
+  tracker.apply(message);
+  const current = tracker.getState().snapshots[0];
+  renderProgressBar(current?.progress.percent || 0, current?.progress.label || current?.state || "queued");
 });
 ```
 
-Use `new URL(..., import.meta.url)` whenever possible. It is the most robust way to point the executor at a real module file.
+## Live Modal Or Task Panel Example
+
+For a current-task panel, the usual flow is:
+
+```ts
+await hub.subscribe({
+  channels: [
+    taskChannel.scope("workspace:42"),
+  ],
+  recentSteps: 100,
+}, (message) => {
+  tracker.apply(message);
+  const state = tracker.getState();
+  renderTaskPanel({
+    tasks: state.snapshots,
+    steps: state.steps,
+    aggregate: state.aggregate,
+  });
+});
+```
+
+That gives the panel:
+
+- current task states
+- ordered recent steps per task
+- aggregate counts for summary badges
+
+without app-owned event reconstruction.
 
 ## Current API
 
-The first public slice is intentionally small:
+The first public slice is still deliberate rather than huge:
 
 ```ts
 import {
+  attachTaskLiveSocketBridge,
   createChildProcessTaskExecutor,
   createPostgresTaskStore,
   createPostgresTaskStoreSchema,
   createTaskHost,
+  createTaskLiveHub,
+  createTaskLiveTracker,
   defineTaskHandler,
+  taskChannel,
 } from "@trebired/tasks";
 ```
 
-Core exported types include:
+Important exported types include:
 
-- `TaskHost`
-- `TaskStore`
 - `TaskRecord`
+- `TaskSnapshot`
+- `TaskProgressState`
 - `TaskStepRecord`
-- `TaskHandlerRegistration`
-- `TaskHandlerModule`
-- `TaskRetryPolicy`
+- `TaskLifecycleEvent`
+- `TaskSubscriptionQuery`
+- `TaskSubscriptionBootstrap`
+- `TaskStore`
 - `TaskExecutor`
+- `TaskRetentionPolicy`
 
 ## Examples
 
-Separate producer and runner processes:
+Durable Postgres + child-process execution:
 
-```ts
-const producer = createTaskHost({
-  store,
-});
+- [examples/postgres_child_process.ts](/home/mirmachynka/projects/serious/npm/tasks/examples/postgres_child_process.ts)
 
-const runner = createTaskHost({
-  store,
-  handlers: [
-    {
-      kind: "video.transcode",
-      entrypoint: {
-        module: new URL("./handlers/transcode_task.ts", import.meta.url),
-      },
-      retry: {
-        maxAttempts: 2,
-      },
-    },
-  ],
-});
+Live bootstrap + tracker flow:
 
-await runner.start();
-
-const queued = await producer.enqueue("video.transcode", {
-  assetId: "asset_7",
-});
-```
-
-Subscribe to local host events:
-
-```ts
-const unsubscribe = tasks.onEvent((event) => {
-  if (event.type === "task:progress") {
-    console.log(event.taskId, event.task?.progressPercent, event.task?.progressLabel);
-  }
-});
-```
-
-Cancel a queued or running task:
-
-```ts
-await tasks.cancel(taskId, "user requested cancellation");
-```
+- [examples/live_updates.ts](/home/mirmachynka/projects/serious/npm/tasks/examples/live_updates.ts)
 
 ## Notes And Limitations
 
 - The first durable adapter is Postgres only.
-- The first executor is child-process based. Worker-thread and Piscina adapters can fit later behind the same `TaskExecutor` contract.
-- Live cross-process subscriptions are intentionally host-owned. The package gives you durable reads and local host events, not a built-in socket layer.
-- Node child-process handlers should point at runnable JavaScript modules unless your host already provides a loader for TypeScript modules. Bun can run `.ts` entrypoints directly.
-- The Postgres adapter expects a `pg`-style pool with transaction-capable `connect()`. That keeps claim and lease logic deliberate instead of pretending a stateless query function is enough.
+- The default executor is child-process based. Worker-thread and Piscina adapters can be added later behind the same `TaskExecutor` contract.
+- The Socket.IO bridge is intentionally thin and optional. The core live contract remains transport-agnostic.
+- Node child-process handlers should usually point at runnable JavaScript modules unless the host already provides a loader for TypeScript modules. Bun can run `.ts` task entrypoints directly.
+- The retention helpers are generic package-owned policies, not a replacement for app-specific archival decisions.
