@@ -32,6 +32,15 @@ const taskChannel = {
   kind(kind: string): string {
     return `kind:${kind}`;
   },
+  topic(key: string): string {
+    return `topic:${key}`;
+  },
+  resource(key: string): string {
+    return `resource:${key}`;
+  },
+  correlation(key: string): string {
+    return `correlation:${key}`;
+  },
   dedupe(key: string): string {
     return `dedupe:${key}`;
   },

@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 
 import {
+  attachTaskLiveSocketBridge,
   createPostgresTaskStoreSchema,
   createTaskHost,
   createTaskLiveHub,
@@ -341,6 +342,47 @@ class MemoryTaskStore implements TaskStore {
   }
 }
 
+class FakeSocket {
+  emitted: Array<{
+    event: string;
+    payload: unknown;
+  }> = [];
+  listeners = new Map<string, Array<(...args: unknown[]) => void>>();
+
+  emit(event: string, payload: unknown): void {
+    this.emitted.push({
+      event,
+      payload,
+    });
+  }
+
+  on(event: string, listener: (...args: unknown[]) => void): void {
+    const current = this.listeners.get(event) || [];
+    current.push(listener);
+    this.listeners.set(event, current);
+  }
+
+  trigger(event: string, payload: unknown): void {
+    for (const listener of this.listeners.get(event) || []) {
+      listener(payload);
+    }
+  }
+}
+
+class FakeSocketServer {
+  listener: ((socket: FakeSocket) => void) | null = null;
+
+  on(_event: "connection", listener: (socket: FakeSocket) => void): void {
+    this.listener = listener;
+  }
+
+  connect(): FakeSocket {
+    const socket = new FakeSocket();
+    this.listener?.(socket);
+    return socket;
+  }
+}
+
 describe("@trebired/tasks", () => {
   test("runs a queued task, exposes snapshots, and normalizes lifecycle events", async () => {
     const store = new MemoryTaskStore();
@@ -523,6 +565,176 @@ describe("@trebired/tasks", () => {
     expect(state.aggregate?.byState.succeeded).toBe(1);
 
     unsubscribe();
+    await tasks.stop();
+  });
+
+  test("filters bootstrap state by package-owned subscription keys and generic channels", async () => {
+    const store = new MemoryTaskStore();
+    const tasks = createTaskHost({
+      store,
+    });
+
+    await tasks.enqueue("demo.filter", {
+      id: "keep",
+    }, {
+      dedupeKey: "shared",
+      concurrencyKey: "resource:42",
+      channels: [
+        taskChannel.scope("workspace:42"),
+        taskChannel.resource("repo:42"),
+        taskChannel.correlation("request:abc"),
+        taskChannel.topic("imports"),
+      ],
+    });
+
+    await tasks.enqueue("demo.filter", {
+      id: "skip",
+    }, {
+      dedupeKey: "other",
+      concurrencyKey: "resource:99",
+      channels: [
+        taskChannel.scope("workspace:99"),
+        taskChannel.resource("repo:99"),
+      ],
+    });
+
+    const bootstrap = await tasks.bootstrap({
+      dedupeKey: "shared",
+      concurrencyKey: "resource:42",
+      channels: [
+        taskChannel.resource("repo:42"),
+      ],
+    });
+
+    expect(bootstrap.snapshots).toHaveLength(1);
+    expect(bootstrap.snapshots[0]?.dedupeKey).toBe("shared");
+    expect(bootstrap.snapshots[0]?.concurrencyKey).toBe("resource:42");
+    expect(bootstrap.snapshots[0]?.channels.includes(taskChannel.topic("imports"))).toBe(true);
+    expect(bootstrap.snapshots[0]?.channels.includes(taskChannel.correlation("request:abc"))).toBe(true);
+  });
+
+  test("bridges bootstrap and normalized live updates through the socket helper", async () => {
+    const store = new MemoryTaskStore();
+    const executor: TaskExecutor = {
+      async execute(request): Promise<TaskExecutionHandle> {
+        await request.onEvent?.({
+          type: "step",
+          step: {
+            message: "socket phase",
+            level: "info",
+            percent: 50,
+          },
+        });
+
+        return {
+          async cancel() {
+            return;
+          },
+          completion: new Promise((resolve) => {
+            setTimeout(() => {
+              resolve({
+                status: "succeeded",
+                output: {
+                  ok: true,
+                },
+              });
+            }, 25);
+          }),
+        };
+      },
+    };
+
+    const tasks = createTaskHost({
+      store,
+      executor,
+      handlers: [
+        {
+          kind: "demo.socket",
+          entrypoint: {
+            module: new URL("../../examples/handlers/report_task.ts", import.meta.url),
+          },
+        },
+      ],
+      runner: {
+        pollIntervalMs: 10,
+        heartbeatMs: 20,
+        leaseMs: 100,
+        globalConcurrency: 1,
+      },
+    });
+
+    await tasks.start();
+    const queued = await tasks.enqueue("demo.socket", {
+      id: "socket",
+    }, {
+      channels: [
+        taskChannel.scope("workspace:socket"),
+      ],
+    });
+
+    const server = new FakeSocketServer();
+    attachTaskLiveSocketBridge(server, {
+      hub: createTaskLiveHub(tasks),
+    });
+
+    const socket = server.connect();
+    socket.trigger("tasks:subscribe", {
+      id: "panel",
+      query: {
+        taskIds: [queued.task.id],
+        recentSteps: 10,
+      },
+    });
+
+    for (let index = 0; index < 50; index += 1) {
+      const delivered = socket.emitted.some((entry) => {
+        if (entry.event !== "tasks:live" || typeof entry.payload !== "object" || !entry.payload) {
+          return false;
+        }
+
+        const payload = entry.payload as {
+          type?: string;
+          event?: {
+            event?: string;
+          };
+        };
+
+        return payload.type === "event" && payload.event?.event === "succeeded";
+      });
+
+      if (delivered) {
+        break;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    }
+
+    const bootstrapMessage = socket.emitted.find((entry) => entry.event === "tasks:live");
+    const succeededEvent = socket.emitted.find((entry) => {
+      if (entry.event !== "tasks:live" || typeof entry.payload !== "object" || !entry.payload) {
+        return false;
+      }
+
+      const payload = entry.payload as {
+        type?: string;
+        event?: {
+          event?: string;
+        };
+      };
+
+      return payload.type === "event" && payload.event?.event === "succeeded";
+    });
+
+    expect((bootstrapMessage?.payload as {
+      type?: string;
+      id?: string;
+    })?.type).toBe("bootstrap");
+    expect((bootstrapMessage?.payload as {
+      type?: string;
+      id?: string;
+    })?.id).toBe("panel");
+    expect(succeededEvent).toBeDefined();
+
     await tasks.stop();
   });
 

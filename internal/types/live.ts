@@ -58,6 +58,9 @@ export type TaskSubscriptionQuery = {
   kinds?: string[] | null;
   states?: TaskLifecycleState[] | null;
   statuses?: TaskStatus[] | null;
+  concurrencyKey?: string | null;
+  dedupeKey?: string | null;
+  supersedeKey?: string | null;
   limit?: number;
   recentSteps?: number | null;
   includeAggregate?: boolean;

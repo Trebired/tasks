@@ -306,6 +306,9 @@ import { taskChannel } from "@trebired/tasks";
 
 taskChannel.task("task_42");
 taskChannel.kind("report.generate");
+taskChannel.topic("imports");
+taskChannel.resource("repo:42");
+taskChannel.correlation("request:abc");
 taskChannel.dedupe("report:rpt_42");
 taskChannel.concurrency("report:rpt_42");
 taskChannel.supersede("scan:repo_7");
@@ -325,6 +328,16 @@ await tasks.enqueue("report.generate", input, {
 
 This keeps subscription routing generic and typed without forcing every app to invent its own free-form key naming scheme.
 
+Subscription queries can also filter directly by package-owned keys:
+
+```ts
+const bootstrap = await tasks.bootstrap({
+  dedupeKey: "report:rpt_42",
+  concurrencyKey: "report:rpt_42",
+  supersedeKey: "scan:repo_7",
+});
+```
+
 ## Live Subscription Model
 
 The package now ships a generic live hub for real-time UI flows:
@@ -339,6 +352,8 @@ Main methods:
 
 - `hub.bootstrap(query?)`
 - `hub.subscribe(query, listener)`
+
+The live hub delegates bootstrap reads back to the host, so polling, direct reads, and live subscribe-plus-bootstrap all share one canonical snapshot path.
 
 The flow is intentionally explicit:
 

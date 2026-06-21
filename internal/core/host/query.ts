@@ -87,6 +87,9 @@ async function bootstrapTaskSubscription(
     statuses: query.statuses,
     channels: query.channels,
     states: query.states,
+    concurrencyKey: query.concurrencyKey,
+    dedupeKey: query.dedupeKey,
+    supersedeKey: query.supersedeKey,
     limit: query.limit,
   });
 
