@@ -1,4 +1,13 @@
 export {
+  createTaskStore,
+} from "./storage/create.js";
+export {
+  prepareTaskStoreSchema,
+} from "./storage/prepare.js";
+export {
+  createTaskStoreSchema,
+} from "./storage/schema.js";
+export {
   DEFAULT_TASK_GLOBAL_CONCURRENCY,
   DEFAULT_TASK_HEARTBEAT_MS,
   DEFAULT_TASK_LEASE_MS,
@@ -49,6 +58,11 @@ export {
   preparePostgresTaskStoreSchema,
   createPostgresTaskStoreSchema,
 } from "./storage/postgres.js";
+export {
+  createSqliteTaskStore,
+  createSqliteTaskStoreSchema,
+  prepareSqliteTaskStoreSchema,
+} from "./storage/sqlite.js";
 
 export type {
   TaskAggregateSnapshot,
@@ -62,6 +76,11 @@ export type {
   PostgresTaskQueryable,
   PostgresTaskSchemaOptions,
   PostgresTaskStoreOptions,
+  SqliteTaskDatabase,
+  SqliteTaskSchemaOptions,
+  SqliteTaskStatement,
+  SqliteTaskStatementResult,
+  SqliteTaskStoreOptions,
   TaskAppendStepInput,
   TaskCancelInput,
   TaskCancelRunningInput,
@@ -131,6 +150,10 @@ export type {
   TaskStepRecord,
   TaskStaleRequeueInput,
   TaskStore,
+  TaskStoreDriver,
+  TaskStoreFactoryOptions,
+  TaskStorePrepareOptions,
+  TaskStoreSchemaFactoryOptions,
   TaskSubscriptionBootstrap,
   TaskSubscriptionQuery,
   TaskSuccessInput,

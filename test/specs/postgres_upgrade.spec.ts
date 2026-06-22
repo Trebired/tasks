@@ -1,8 +1,10 @@
 import { describe, expect, test } from "bun:test";
 
 import {
+  createTaskStoreSchema,
   createPostgresTaskStore,
   createPostgresTaskStoreSchema,
+  prepareTaskStoreSchema,
   preparePostgresTaskStoreSchema,
 } from "#8t8bq600b4wu";
 import type {
@@ -112,10 +114,14 @@ function createTaskRow(params: unknown[]): Record<string, unknown> {
 describe("@trebired/tasks postgres upgrade", () => {
   test("adds supersede_key upgrade sql to the package-owned schema", () => {
     const sql = createPostgresTaskStoreSchema();
+    const genericSql = createTaskStoreSchema({
+      driver: "postgres",
+    });
 
     expect(sql.includes("add column if not exists \"supersede_key\" text")).toBe(true);
     expect(sql.includes("create index if not exists \"tb_tasks_supersede_key_idx\"")).toBe(true);
     expect(sql.includes("where supersede_key is not null")).toBe(true);
+    expect(genericSql).toBe(sql);
   });
 
   test("prepares older task tables so supersede-backed inserts stop failing", async () => {
@@ -139,6 +145,13 @@ describe("@trebired/tasks postgres upgrade", () => {
 
     await preparePostgresTaskStoreSchema({
       client,
+    });
+
+    await prepareTaskStoreSchema({
+      driver: "postgres",
+      postgres: {
+        client,
+      },
     });
 
     await preparePostgresTaskStoreSchema({

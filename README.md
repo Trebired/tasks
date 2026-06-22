@@ -1,6 +1,6 @@
 # @trebired/tasks
 
-Durable background task host for Bun and Node.js applications, with built-in progress state, step replay, live subscription bootstrap, stale detection, and pluggable execution backends.
+Durable background task host for Bun and Node.js applications, with built-in progress state, step replay, live subscription bootstrap, stale detection, pluggable execution backends, and built-in durable Postgres and SQLite stores.
 
 `@trebired/tasks` is the generic Trebired package for hosts that need real background work outside the request path without rebuilding the whole task observability layer around it later.
 
@@ -36,7 +36,7 @@ Runtime support: Bun 1+ and Node.js 18+.
 npm install @trebired/tasks
 ```
 
-For the first durable adapter:
+For the Postgres driver:
 
 ```sh
 npm install pg
@@ -79,29 +79,35 @@ export default defineTaskHandler<{ reportId: string }, { outputPath: string }>({
 });
 ```
 
-Create a Postgres-backed host and start a runner:
+Create a lightweight local host with the generic SQLite store factory:
 
 ```ts
-import { Pool } from "pg";
 import {
-  createPostgresTaskStore,
+  createInProcessTaskExecutor,
+  createTaskStore,
   preparePostgresTaskStoreSchema,
+  prepareTaskStoreSchema,
   createTaskHost,
-  taskChannel,
 } from "@trebired/tasks";
+import { join } from "node:path";
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
+const path = join(process.cwd(), ".data", "tasks.sqlite");
 
-await preparePostgresTaskStoreSchema({
-  client: pool,
+await prepareTaskStoreSchema({
+  driver: "sqlite",
+  sqlite: {
+    path,
+  },
 });
 
 const tasks = createTaskHost({
-  store: createPostgresTaskStore({
-    client: pool,
+  store: createTaskStore({
+    driver: "sqlite",
+    sqlite: {
+      path,
+    },
   }),
+  executor: createInProcessTaskExecutor(),
   handlers: [
     {
       kind: "report.generate",
@@ -116,10 +122,6 @@ const tasks = createTaskHost({
       },
     },
   ],
-  runner: {
-    globalConcurrency: 4,
-    watchdogMs: 60_000,
-  },
 });
 
 await tasks.start();
@@ -129,10 +131,6 @@ const queued = await tasks.enqueue("report.generate", {
 }, {
   dedupeKey: "report:rpt_42",
   concurrencyKey: "report:rpt_42",
-  channels: [
-    taskChannel.scope("workspace:42"),
-    taskChannel.scope("reports"),
-  ],
 });
 
 console.log(queued.task.id, queued.disposition);
@@ -632,7 +630,56 @@ This covers generic retention concerns such as:
 
 ## Storage Adapter Model
 
-The core engine depends on a `TaskStore` contract. The first durable adapter is Postgres.
+The core engine depends on a `TaskStore` contract, but the public happy path is now backend-agnostic.
+
+Use the generic store factory:
+
+```ts
+import {
+  createTaskStore,
+  prepareTaskStoreSchema,
+} from "@trebired/tasks";
+```
+
+SQLite for local durable hosts:
+
+```ts
+const path = "/var/lib/tasks/tasks.sqlite";
+
+await prepareTaskStoreSchema({
+  driver: "sqlite",
+  sqlite: {
+    path,
+  },
+});
+
+const store = createTaskStore({
+  driver: "sqlite",
+  sqlite: {
+    path,
+  },
+});
+```
+
+Postgres for multi-process or externally managed database hosts:
+
+```ts
+await prepareTaskStoreSchema({
+  driver: "postgres",
+  postgres: {
+    client: pool,
+    schema: "public",
+    tablePrefix: "tb_",
+  },
+});
+
+const store = createTaskStore({
+  driver: "postgres",
+  postgres: {
+    client: pool,
+  },
+});
+```
 
 Use the package-owned schema preparation helper during startup:
 
@@ -663,6 +710,14 @@ const sql = createPostgresTaskStoreSchema({
 });
 ```
 
+The same generic shape works for schema text generation too:
+
+```ts
+const sqliteSql = createTaskStoreSchema({
+  driver: "sqlite",
+});
+```
+
 Then create the adapter:
 
 ```ts
@@ -673,7 +728,16 @@ const store = createPostgresTaskStore({
 });
 ```
 
-The first adapter targets `pg`-style pools with:
+The explicit backend adapters remain available too:
+
+- `createPostgresTaskStore(...)`
+- `preparePostgresTaskStoreSchema(...)`
+- `createPostgresTaskStoreSchema(...)`
+- `createSqliteTaskStore(...)`
+- `prepareSqliteTaskStoreSchema(...)`
+- `createSqliteTaskStoreSchema(...)`
+
+The Postgres adapter targets `pg`-style pools with:
 
 - `query(sql, params?)`
 - `connect()`
@@ -833,14 +897,20 @@ import {
   createPostgresTaskStore,
   preparePostgresTaskStoreSchema,
   createPostgresTaskStoreSchema,
+  createSqliteTaskStore,
+  prepareSqliteTaskStoreSchema,
+  createSqliteTaskStoreSchema,
   createTaskHostEventAdapter,
   createTaskHost,
   createTaskLifecycleEventAdapter,
   createTaskLiveHub,
   createTaskLiveTracker,
+  createTaskStore,
+  createTaskStoreSchema,
   defineTaskHandler,
   normalizeTaskHostEventEntry,
   normalizeTaskLifecycleEventEntry,
+  prepareTaskStoreSchema,
   taskChannel,
 } from "@trebired/tasks";
 ```
@@ -856,6 +926,7 @@ Important exported types include:
 - `TaskSubscriptionQuery`
 - `TaskSubscriptionBootstrap`
 - `TaskStore`
+- `TaskStoreFactoryOptions`
 - `TaskExecutor`
 - `TaskRetentionPolicy`
 
@@ -865,14 +936,19 @@ Durable Postgres + child-process execution:
 
 - [examples/postgres_child_process.ts](/home/mirmachynka/projects/serious/npm/tasks/examples/postgres_child_process.ts)
 
+Durable SQLite + in-process execution:
+
+- [examples/sqlite_in_process.ts](/home/mirmachynka/projects/serious/npm/tasks/examples/sqlite_in_process.ts)
+
 Live bootstrap + tracker flow:
 
 - [examples/live_updates.ts](/home/mirmachynka/projects/serious/npm/tasks/examples/live_updates.ts)
 
 ## Notes And Limitations
 
-- The first durable adapter is Postgres only.
+- The generic public store factory currently ships with Postgres and SQLite drivers.
 - The default executor is child-process based. Worker-thread and Piscina adapters can be added later behind the same `TaskExecutor` contract.
 - The Socket.IO bridge is intentionally thin and optional. The core live contract remains transport-agnostic.
 - Node child-process handlers should usually point at runnable JavaScript modules unless the host already provides a loader for TypeScript modules. Bun can run `.ts` task entrypoints directly.
+- The SQLite driver uses Bun's builtin SQLite support when available, falls back to Node's `node:sqlite` when available, and otherwise uses `better-sqlite3`.
 - The retention helpers are generic package-owned policies, not a replacement for app-specific archival decisions.

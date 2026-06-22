@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.0
+
+- Added a backend-agnostic public storage happy path with `createTaskStore(...)`, `prepareTaskStoreSchema(...)`, and `createTaskStoreSchema(...)`, with backend selection driven by explicit `driver` options instead of backend names in the main API.
+- Added a first-class built-in SQLite durable store for lightweight local hosts, including schema preparation, claiming, leasing, progress persistence, stale recovery, retries, retention, and durable step history.
+- Kept the explicit backend adapters available for hosts that want them directly, while making the generic store factory the recommended package-owned integration path.
+
 ## 1.0.0
 
 - Added a first-class in-process executor with package-owned handler module loading, cooperative cancellation, progress forwarding, step forwarding, and normalized error shaping.

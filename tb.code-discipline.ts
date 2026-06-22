@@ -1,7 +1,7 @@
 export default {
   sourceRoot: ".",
   sourceExtensions: [".ts", ".tsx", ".js", ".jsx"],
-  excludeDirs: ["node_modules", "dist", "tmp", ".vite", "test", "examples"],
+  excludeDirs: ["node_modules", "dist", "tmp", ".tmp", ".vite", "test", "examples"],
   logging: {
     enabled: true,
     quiet: false,

@@ -94,4 +94,13 @@ export type {
   PostgresTaskQueryable,
   PostgresTaskSchemaOptions,
   PostgresTaskStoreOptions,
+  SqliteTaskDatabase,
+  SqliteTaskSchemaOptions,
+  SqliteTaskStatement,
+  SqliteTaskStatementResult,
+  SqliteTaskStoreOptions,
+  TaskStoreDriver,
+  TaskStoreFactoryOptions,
+  TaskStorePrepareOptions,
+  TaskStoreSchemaFactoryOptions,
 } from "./types/integrations.js";
