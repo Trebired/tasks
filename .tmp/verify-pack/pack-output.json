@@ -1,0 +1,1876 @@
+[
+  {
+    "id": "@trebired/tasks@0.2.1",
+    "name": "@trebired/tasks",
+    "version": "0.2.1",
+    "size": 70714,
+    "unpackedSize": 335515,
+    "shasum": "8a00b7d8168a578962a8d87d324f318abd025664",
+    "integrity": "sha512-2xVsMMUsU3uDjfwyS/AKGCq8hB11DclUZklHp7kI0yQJJX+fyCD9HuveAi/zfm9B92B+Ubu3eNUL7kXbEQV+kw==",
+    "filename": "trebired-tasks-0.2.1.tgz",
+    "files": [
+      {
+        "path": "CHANGELOG.md",
+        "size": 1477,
+        "mode": 420
+      },
+      {
+        "path": "LICENSE",
+        "size": 1065,
+        "mode": 420
+      },
+      {
+        "path": "README.md",
+        "size": 18493,
+        "mode": 420
+      },
+      {
+        "path": "dist/backend/utils/normalize.d.ts",
+        "size": 97,
+        "mode": 420
+      },
+      {
+        "path": "dist/backend/utils/normalize.d.ts.map",
+        "size": 187,
+        "mode": 420
+      },
+      {
+        "path": "dist/backend/utils/normalize.js",
+        "size": 135,
+        "mode": 420
+      },
+      {
+        "path": "dist/backend/utils/normalize.js.map",
+        "size": 264,
+        "mode": 420
+      },
+      {
+        "path": "dist/backend/utils/object.d.ts",
+        "size": 187,
+        "mode": 420
+      },
+      {
+        "path": "dist/backend/utils/object.d.ts.map",
+        "size": 309,
+        "mode": 420
+      },
+      {
+        "path": "dist/backend/utils/object.js",
+        "size": 314,
+        "mode": 420
+      },
+      {
+        "path": "dist/backend/utils/object.js.map",
+        "size": 514,
+        "mode": 420
+      },
+      {
+        "path": "dist/backend/utils/time.d.ts",
+        "size": 112,
+        "mode": 420
+      },
+      {
+        "path": "dist/backend/utils/time.d.ts.map",
+        "size": 190,
+        "mode": 420
+      },
+      {
+        "path": "dist/backend/utils/time.js",
+        "size": 132,
+        "mode": 420
+      },
+      {
+        "path": "dist/backend/utils/time.js.map",
+        "size": 251,
+        "mode": 420
+      },
+      {
+        "path": "dist/constants.d.ts",
+        "size": 80,
+        "mode": 420
+      },
+      {
+        "path": "dist/constants.d.ts.map",
+        "size": 134,
+        "mode": 420
+      },
+      {
+        "path": "dist/constants.js",
+        "size": 78,
+        "mode": 420
+      },
+      {
+        "path": "dist/constants.js.map",
+        "size": 132,
+        "mode": 420
+      },
+      {
+        "path": "dist/core/channels.d.ts",
+        "size": 84,
+        "mode": 420
+      },
+      {
+        "path": "dist/core/channels.d.ts.map",
+        "size": 140,
+        "mode": 420
+      },
+      {
+        "path": "dist/core/channels.js",
+        "size": 82,
+        "mode": 420
+      },
+      {
+        "path": "dist/core/channels.js.map",
+        "size": 138,
+        "mode": 420
+      },
+      {
+        "path": "dist/core/emitter.d.ts",
+        "size": 82,
+        "mode": 420
+      },
+      {
+        "path": "dist/core/emitter.d.ts.map",
+        "size": 138,
+        "mode": 420
+      },
+      {
+        "path": "dist/core/emitter.js",
+        "size": 80,
+        "mode": 420
+      },
+      {
+        "path": "dist/core/emitter.js.map",
+        "size": 136,
+        "mode": 420
+      },
+      {
+        "path": "dist/core/host.d.ts",
+        "size": 76,
+        "mode": 420
+      },
+      {
+        "path": "dist/core/host.d.ts.map",
+        "size": 132,
+        "mode": 420
+      },
+      {
+        "path": "dist/core/host.js",
+        "size": 74,
+        "mode": 420
+      },
+      {
+        "path": "dist/core/host.js.map",
+        "size": 130,
+        "mode": 420
+      },
+      {
+        "path": "dist/core/lifecycle.d.ts",
+        "size": 86,
+        "mode": 420
+      },
+      {
+        "path": "dist/core/lifecycle.d.ts.map",
+        "size": 142,
+        "mode": 420
+      },
+      {
+        "path": "dist/core/lifecycle.js",
+        "size": 84,
+        "mode": 420
+      },
+      {
+        "path": "dist/core/lifecycle.js.map",
+        "size": 140,
+        "mode": 420
+      },
+      {
+        "path": "dist/core/retry.d.ts",
+        "size": 78,
+        "mode": 420
+      },
+      {
+        "path": "dist/core/retry.d.ts.map",
+        "size": 134,
+        "mode": 420
+      },
+      {
+        "path": "dist/core/retry.js",
+        "size": 76,
+        "mode": 420
+      },
+      {
+        "path": "dist/core/retry.js.map",
+        "size": 132,
+        "mode": 420
+      },
+      {
+        "path": "dist/core/snapshot.d.ts",
+        "size": 84,
+        "mode": 420
+      },
+      {
+        "path": "dist/core/snapshot.d.ts.map",
+        "size": 140,
+        "mode": 420
+      },
+      {
+        "path": "dist/core/snapshot.js",
+        "size": 82,
+        "mode": 420
+      },
+      {
+        "path": "dist/core/snapshot.js.map",
+        "size": 138,
+        "mode": 420
+      },
+      {
+        "path": "dist/core/utils.d.ts",
+        "size": 78,
+        "mode": 420
+      },
+      {
+        "path": "dist/core/utils.d.ts.map",
+        "size": 134,
+        "mode": 420
+      },
+      {
+        "path": "dist/core/utils.js",
+        "size": 76,
+        "mode": 420
+      },
+      {
+        "path": "dist/core/utils.js.map",
+        "size": 132,
+        "mode": 420
+      },
+      {
+        "path": "dist/executor/child/process_worker.d.ts",
+        "size": 109,
+        "mode": 420
+      },
+      {
+        "path": "dist/executor/child/process_worker.d.ts.map",
+        "size": 165,
+        "mode": 420
+      },
+      {
+        "path": "dist/executor/child/process_worker.js",
+        "size": 107,
+        "mode": 420
+      },
+      {
+        "path": "dist/executor/child/process_worker.js.map",
+        "size": 163,
+        "mode": 420
+      },
+      {
+        "path": "dist/executor/child/process.d.ts",
+        "size": 95,
+        "mode": 420
+      },
+      {
+        "path": "dist/executor/child/process.d.ts.map",
+        "size": 151,
+        "mode": 420
+      },
+      {
+        "path": "dist/executor/child/process.js",
+        "size": 93,
+        "mode": 420
+      },
+      {
+        "path": "dist/executor/child/process.js.map",
+        "size": 149,
+        "mode": 420
+      },
+      {
+        "path": "dist/frontend/js/utils/text.d.ts",
+        "size": 88,
+        "mode": 420
+      },
+      {
+        "path": "dist/frontend/js/utils/text.d.ts.map",
+        "size": 184,
+        "mode": 420
+      },
+      {
+        "path": "dist/frontend/js/utils/text.js",
+        "size": 132,
+        "mode": 420
+      },
+      {
+        "path": "dist/frontend/js/utils/text.js.map",
+        "size": 271,
+        "mode": 420
+      },
+      {
+        "path": "dist/handler.d.ts",
+        "size": 76,
+        "mode": 420
+      },
+      {
+        "path": "dist/handler.d.ts.map",
+        "size": 130,
+        "mode": 420
+      },
+      {
+        "path": "dist/handler.js",
+        "size": 74,
+        "mode": 420
+      },
+      {
+        "path": "dist/handler.js.map",
+        "size": 128,
+        "mode": 420
+      },
+      {
+        "path": "dist/index.d.ts",
+        "size": 72,
+        "mode": 420
+      },
+      {
+        "path": "dist/index.d.ts.map",
+        "size": 126,
+        "mode": 420
+      },
+      {
+        "path": "dist/index.js",
+        "size": 70,
+        "mode": 420
+      },
+      {
+        "path": "dist/index.js.map",
+        "size": 124,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/backend/utils/normalize.d.ts",
+        "size": 97,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/backend/utils/normalize.d.ts.map",
+        "size": 192,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/backend/utils/normalize.js",
+        "size": 135,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/backend/utils/normalize.js.map",
+        "size": 269,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/backend/utils/object.d.ts",
+        "size": 187,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/backend/utils/object.d.ts.map",
+        "size": 314,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/backend/utils/object.js",
+        "size": 314,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/backend/utils/object.js.map",
+        "size": 519,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/backend/utils/time.d.ts",
+        "size": 112,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/backend/utils/time.d.ts.map",
+        "size": 195,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/backend/utils/time.js",
+        "size": 132,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/backend/utils/time.js.map",
+        "size": 256,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/constants.d.ts",
+        "size": 1099,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/constants.d.ts.map",
+        "size": 735,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/constants.js",
+        "size": 993,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/constants.js.map",
+        "size": 733,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/channels.d.ts",
+        "size": 924,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/channels.d.ts.map",
+        "size": 858,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/channels.js",
+        "size": 1862,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/channels.js.map",
+        "size": 2190,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/emitter.d.ts",
+        "size": 263,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/emitter.d.ts.map",
+        "size": 367,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/emitter.js",
+        "size": 1288,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/emitter.js.map",
+        "size": 602,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host.d.ts",
+        "size": 85,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host.d.ts.map",
+        "size": 159,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host.js",
+        "size": 83,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host.js.map",
+        "size": 157,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host/context.d.ts",
+        "size": 2099,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host/context.d.ts.map",
+        "size": 1933,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host/context.js",
+        "size": 3273,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host/context.js.map",
+        "size": 2978,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host/control.d.ts",
+        "size": 496,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host/control.d.ts.map",
+        "size": 567,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host/control.js",
+        "size": 2111,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host/control.js.map",
+        "size": 2188,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host/create.d.ts",
+        "size": 201,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host/create.d.ts.map",
+        "size": 270,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host/create.js",
+        "size": 2200,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host/create.js.map",
+        "size": 2333,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host/execution.d.ts",
+        "size": 637,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host/execution.d.ts.map",
+        "size": 637,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host/execution.js",
+        "size": 2741,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host/execution.js.map",
+        "size": 2757,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host/execution/events.d.ts",
+        "size": 357,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host/execution/events.d.ts.map",
+        "size": 364,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host/execution/events.js",
+        "size": 2784,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host/execution/events.js.map",
+        "size": 2848,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host/execution/outcome.d.ts",
+        "size": 655,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host/execution/outcome.d.ts.map",
+        "size": 679,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host/execution/outcome.js",
+        "size": 4948,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host/execution/outcome.js.map",
+        "size": 5003,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host/lifecycle.d.ts",
+        "size": 278,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host/lifecycle.d.ts.map",
+        "size": 358,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host/lifecycle.js",
+        "size": 3646,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host/lifecycle.js.map",
+        "size": 3676,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host/pump.d.ts",
+        "size": 767,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host/pump.d.ts.map",
+        "size": 739,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host/pump.js",
+        "size": 3403,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host/pump.js.map",
+        "size": 3369,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host/query.d.ts",
+        "size": 1325,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host/query.d.ts.map",
+        "size": 1235,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host/query.js",
+        "size": 3965,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/host/query.js.map",
+        "size": 4011,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/lifecycle.d.ts",
+        "size": 716,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/lifecycle.d.ts.map",
+        "size": 749,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/lifecycle.js",
+        "size": 2402,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/lifecycle.js.map",
+        "size": 2204,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/retry.d.ts",
+        "size": 383,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/retry.d.ts.map",
+        "size": 421,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/retry.js",
+        "size": 2402,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/retry.js.map",
+        "size": 2550,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/snapshot.d.ts",
+        "size": 938,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/snapshot.d.ts.map",
+        "size": 832,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/snapshot.js",
+        "size": 3952,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/snapshot.js.map",
+        "size": 4039,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/utils.d.ts",
+        "size": 773,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/utils.d.ts.map",
+        "size": 863,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/utils.js",
+        "size": 2395,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/core/utils.js.map",
+        "size": 2806,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/executor/child/process_worker.d.ts",
+        "size": 55,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/executor/child/process_worker.d.ts.map",
+        "size": 151,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/executor/child/process_worker.js",
+        "size": 3013,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/executor/child/process_worker.js.map",
+        "size": 3048,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/executor/child/process.d.ts",
+        "size": 269,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/executor/child/process.d.ts.map",
+        "size": 286,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/executor/child/process.js",
+        "size": 6276,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/executor/child/process.js.map",
+        "size": 6834,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/executor/core/utils.d.ts",
+        "size": 72,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/executor/core/utils.d.ts.map",
+        "size": 151,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/executor/core/utils.js",
+        "size": 70,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/executor/core/utils.js.map",
+        "size": 149,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/executor/types.d.ts",
+        "size": 64,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/executor/types.d.ts.map",
+        "size": 143,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/executor/types.js",
+        "size": 62,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/executor/types.js.map",
+        "size": 141,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/frontend/js/utils/text.d.ts",
+        "size": 88,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/frontend/js/utils/text.d.ts.map",
+        "size": 189,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/frontend/js/utils/text.js",
+        "size": 132,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/frontend/js/utils/text.js.map",
+        "size": 276,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/handler.d.ts",
+        "size": 275,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/handler.d.ts.map",
+        "size": 346,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/handler.js",
+        "size": 126,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/handler.js.map",
+        "size": 207,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/index.d.ts",
+        "size": 2694,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/index.d.ts.map",
+        "size": 1771,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/index.js",
+        "size": 1076,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/index.js.map",
+        "size": 773,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/live/hub.d.ts",
+        "size": 398,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/live/hub.d.ts.map",
+        "size": 391,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/live/hub.js",
+        "size": 1043,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/live/hub.js.map",
+        "size": 976,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/live/socket_io.d.ts",
+        "size": 295,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/live/socket_io.d.ts.map",
+        "size": 303,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/live/socket_io.js",
+        "size": 1388,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/live/socket_io.js.map",
+        "size": 1472,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/live/tracker.d.ts",
+        "size": 186,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/live/tracker.d.ts.map",
+        "size": 239,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/live/tracker.js",
+        "size": 2185,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/live/tracker.js.map",
+        "size": 2265,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres.d.ts",
+        "size": 172,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres.d.ts.map",
+        "size": 217,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres.js",
+        "size": 170,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres.js.map",
+        "size": 215,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/cancel.d.ts",
+        "size": 361,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/cancel.d.ts.map",
+        "size": 439,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/cancel.js",
+        "size": 1989,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/cancel.js.map",
+        "size": 1893,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/claim.d.ts",
+        "size": 376,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/claim.d.ts.map",
+        "size": 442,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/claim.js",
+        "size": 3894,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/claim.js.map",
+        "size": 3681,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/completion.d.ts",
+        "size": 801,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/completion.d.ts.map",
+        "size": 837,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/completion.js",
+        "size": 2665,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/completion.js.map",
+        "size": 1927,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/create_task.d.ts",
+        "size": 317,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/create_task.d.ts.map",
+        "size": 376,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/create_task.js",
+        "size": 3469,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/create_task.js.map",
+        "size": 2781,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/create.d.ts",
+        "size": 239,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/create.d.ts.map",
+        "size": 285,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/create.js",
+        "size": 2127,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/create.js.map",
+        "size": 2213,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/progress.d.ts",
+        "size": 1226,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/progress.d.ts.map",
+        "size": 1185,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/progress.js",
+        "size": 4212,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/progress.js.map",
+        "size": 2958,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/query.d.ts",
+        "size": 317,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/query.d.ts.map",
+        "size": 408,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/query.js",
+        "size": 1832,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/query.js.map",
+        "size": 1886,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/read.d.ts",
+        "size": 1085,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/read.d.ts.map",
+        "size": 1071,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/read.js",
+        "size": 2478,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/read.js.map",
+        "size": 2699,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/retention.d.ts",
+        "size": 350,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/retention.d.ts.map",
+        "size": 384,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/retention.js",
+        "size": 2964,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/retention.js.map",
+        "size": 2432,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/schema.d.ts",
+        "size": 240,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/schema.d.ts.map",
+        "size": 274,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/schema.js",
+        "size": 3581,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/schema.js.map",
+        "size": 2081,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/shared.d.ts",
+        "size": 2120,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/shared.d.ts.map",
+        "size": 2259,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/shared.js",
+        "size": 3360,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/shared.js.map",
+        "size": 3794,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/stale.d.ts",
+        "size": 530,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/stale.d.ts.map",
+        "size": 556,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/stale.js",
+        "size": 3555,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/storage/postgres/stale.js.map",
+        "size": 2459,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/types.d.ts",
+        "size": 1873,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/types.d.ts.map",
+        "size": 1273,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/types.js",
+        "size": 44,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/types.js.map",
+        "size": 110,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/types/core.d.ts",
+        "size": 4197,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/types/core.d.ts.map",
+        "size": 4804,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/types/core.js",
+        "size": 43,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/types/core.js.map",
+        "size": 117,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/types/execution.d.ts",
+        "size": 5305,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/types/execution.d.ts.map",
+        "size": 5788,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/types/execution.js",
+        "size": 48,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/types/execution.js.map",
+        "size": 127,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/types/integrations.d.ts",
+        "size": 898,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/types/integrations.d.ts.map",
+        "size": 1093,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/types/integrations.js",
+        "size": 51,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/types/integrations.js.map",
+        "size": 133,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/types/live.d.ts",
+        "size": 4780,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/types/live.d.ts.map",
+        "size": 4993,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/types/live.js",
+        "size": 43,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/types/live.js.map",
+        "size": 117,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/types/logging.d.ts",
+        "size": 551,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/types/logging.d.ts.map",
+        "size": 473,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/types/logging.js",
+        "size": 46,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/types/logging.js.map",
+        "size": 123,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/types/store.d.ts",
+        "size": 4907,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/types/store.d.ts.map",
+        "size": 5420,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/types/store.js",
+        "size": 44,
+        "mode": 420
+      },
+      {
+        "path": "dist/internal/types/store.js.map",
+        "size": 119,
+        "mode": 420
+      },
+      {
+        "path": "dist/live/hub.d.ts",
+        "size": 74,
+        "mode": 420
+      },
+      {
+        "path": "dist/live/hub.d.ts.map",
+        "size": 130,
+        "mode": 420
+      },
+      {
+        "path": "dist/live/hub.js",
+        "size": 72,
+        "mode": 420
+      },
+      {
+        "path": "dist/live/hub.js.map",
+        "size": 128,
+        "mode": 420
+      },
+      {
+        "path": "dist/live/socket_io.d.ts",
+        "size": 86,
+        "mode": 420
+      },
+      {
+        "path": "dist/live/socket_io.d.ts.map",
+        "size": 142,
+        "mode": 420
+      },
+      {
+        "path": "dist/live/socket_io.js",
+        "size": 84,
+        "mode": 420
+      },
+      {
+        "path": "dist/live/socket_io.js.map",
+        "size": 140,
+        "mode": 420
+      },
+      {
+        "path": "dist/live/tracker.d.ts",
+        "size": 82,
+        "mode": 420
+      },
+      {
+        "path": "dist/live/tracker.d.ts.map",
+        "size": 138,
+        "mode": 420
+      },
+      {
+        "path": "dist/live/tracker.js",
+        "size": 80,
+        "mode": 420
+      },
+      {
+        "path": "dist/live/tracker.js.map",
+        "size": 136,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/backend/utils/normalize.d.ts",
+        "size": 97,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/backend/utils/normalize.d.ts.map",
+        "size": 187,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/backend/utils/normalize.js",
+        "size": 135,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/backend/utils/normalize.js.map",
+        "size": 264,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/backend/utils/object.d.ts",
+        "size": 187,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/backend/utils/object.d.ts.map",
+        "size": 309,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/backend/utils/object.js",
+        "size": 314,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/backend/utils/object.js.map",
+        "size": 514,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/backend/utils/time.d.ts",
+        "size": 112,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/backend/utils/time.d.ts.map",
+        "size": 190,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/backend/utils/time.js",
+        "size": 132,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/backend/utils/time.js.map",
+        "size": 251,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/constants.d.ts",
+        "size": 81,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/constants.d.ts.map",
+        "size": 134,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/constants.js",
+        "size": 79,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/constants.js.map",
+        "size": 132,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/core/channels.d.ts",
+        "size": 87,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/core/channels.d.ts.map",
+        "size": 140,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/core/channels.js",
+        "size": 85,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/core/channels.js.map",
+        "size": 138,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/core/emitter.d.ts",
+        "size": 85,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/core/emitter.d.ts.map",
+        "size": 138,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/core/emitter.js",
+        "size": 83,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/core/emitter.js.map",
+        "size": 136,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/core/host.d.ts",
+        "size": 79,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/core/host.d.ts.map",
+        "size": 132,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/core/host.js",
+        "size": 77,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/core/host.js.map",
+        "size": 130,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/core/lifecycle.d.ts",
+        "size": 89,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/core/lifecycle.d.ts.map",
+        "size": 142,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/core/lifecycle.js",
+        "size": 87,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/core/lifecycle.js.map",
+        "size": 140,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/core/retry.d.ts",
+        "size": 81,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/core/retry.d.ts.map",
+        "size": 134,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/core/retry.js",
+        "size": 79,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/core/retry.js.map",
+        "size": 132,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/core/snapshot.d.ts",
+        "size": 87,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/core/snapshot.d.ts.map",
+        "size": 140,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/core/snapshot.js",
+        "size": 85,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/core/snapshot.js.map",
+        "size": 138,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/core/utils.d.ts",
+        "size": 81,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/core/utils.d.ts.map",
+        "size": 134,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/core/utils.js",
+        "size": 79,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/core/utils.js.map",
+        "size": 132,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/executor/child/process_worker.d.ts",
+        "size": 112,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/executor/child/process_worker.d.ts.map",
+        "size": 165,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/executor/child/process_worker.js",
+        "size": 110,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/executor/child/process_worker.js.map",
+        "size": 163,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/executor/child/process.d.ts",
+        "size": 98,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/executor/child/process.d.ts.map",
+        "size": 151,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/executor/child/process.js",
+        "size": 96,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/executor/child/process.js.map",
+        "size": 149,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/frontend/js/utils/text.d.ts",
+        "size": 88,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/frontend/js/utils/text.d.ts.map",
+        "size": 184,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/frontend/js/utils/text.js",
+        "size": 132,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/frontend/js/utils/text.js.map",
+        "size": 271,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/handler.d.ts",
+        "size": 77,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/handler.d.ts.map",
+        "size": 130,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/handler.js",
+        "size": 75,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/handler.js.map",
+        "size": 128,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/index.d.ts",
+        "size": 73,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/index.d.ts.map",
+        "size": 126,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/index.js",
+        "size": 71,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/index.js.map",
+        "size": 124,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/live/hub.d.ts",
+        "size": 77,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/live/hub.d.ts.map",
+        "size": 130,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/live/hub.js",
+        "size": 75,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/live/hub.js.map",
+        "size": 128,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/live/socket_io.d.ts",
+        "size": 89,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/live/socket_io.d.ts.map",
+        "size": 142,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/live/socket_io.js",
+        "size": 87,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/live/socket_io.js.map",
+        "size": 140,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/live/tracker.d.ts",
+        "size": 85,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/live/tracker.d.ts.map",
+        "size": 138,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/live/tracker.js",
+        "size": 83,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/live/tracker.js.map",
+        "size": 136,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/storage/postgres.d.ts",
+        "size": 90,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/storage/postgres.d.ts.map",
+        "size": 143,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/storage/postgres.js",
+        "size": 88,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/storage/postgres.js.map",
+        "size": 141,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/types.d.ts",
+        "size": 73,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/types.d.ts.map",
+        "size": 126,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/types.js",
+        "size": 71,
+        "mode": 420
+      },
+      {
+        "path": "dist/src/types.js.map",
+        "size": 124,
+        "mode": 420
+      },
+      {
+        "path": "dist/storage/postgres.d.ts",
+        "size": 87,
+        "mode": 420
+      },
+      {
+        "path": "dist/storage/postgres.d.ts.map",
+        "size": 143,
+        "mode": 420
+      },
+      {
+        "path": "dist/storage/postgres.js",
+        "size": 85,
+        "mode": 420
+      },
+      {
+        "path": "dist/storage/postgres.js.map",
+        "size": 141,
+        "mode": 420
+      },
+      {
+        "path": "dist/types.d.ts",
+        "size": 72,
+        "mode": 420
+      },
+      {
+        "path": "dist/types.d.ts.map",
+        "size": 126,
+        "mode": 420
+      },
+      {
+        "path": "dist/types.js",
+        "size": 70,
+        "mode": 420
+      },
+      {
+        "path": "dist/types.js.map",
+        "size": 124,
+        "mode": 420
+      },
+      {
+        "path": "package.json",
+        "size": 5856,
+        "mode": 420
+      }
+    ],
+    "entryCount": 372,
+    "bundled": []
+  }
+]

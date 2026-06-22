@@ -1,0 +1,12 @@
+{
+  "name": "tasks-pack-smoke",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@trebired/logger-adapter": "file:/home/mirmachynka/projects/serious/npm/tasks/node_modules/@trebired/logger-adapter",
+    "@trebired/tasks": "file:/home/mirmachynka/projects/serious/npm/tasks/trebired-tasks-0.2.1.tgz"
+  },
+  "devDependencies": {
+    "@types/node": "file:/home/mirmachynka/projects/serious/npm/tasks/node_modules/@types/node"
+  }
+}
