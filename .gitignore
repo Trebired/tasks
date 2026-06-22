@@ -12,6 +12,7 @@ coverage/
 *.log
 logs/
 .runtime/
+.tmp/
 
 # OS and editor noise
 .DS_Store

@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 
 import type {
   ChildProcessTaskExecutorOptions,
@@ -10,6 +10,7 @@ import type {
   TaskExecutorRunRequest,
 } from "#ksjjcxvzvz26";
 import { toErrorShape } from "#g6h3y0rvrh9n";
+import { resolveTaskModuleSpecifier } from "#sqsl30t1mk0x";
 
 type ChildWorkerMessage =
   | {
@@ -57,22 +58,6 @@ function resolveRuntimeCommand(runtime: "inherit" | "node" | "bun", options: Chi
     command: runtime === "node" ? "node" : process.execPath,
     prefixArgs: options.args ?? [],
   };
-}
-
-function resolveModuleSpecifier(input: string | URL): string {
-  if (input instanceof URL) {
-    return input.href;
-  }
-
-  if (input.startsWith("file://") || input.startsWith("data:") || input.startsWith("node:")) {
-    return input;
-  }
-
-  if (input.startsWith("/") || input.startsWith(".")) {
-    return pathToFileURL(input).href;
-  }
-
-  return input;
 }
 
 function createChildProcessTaskExecutor(options: ChildProcessTaskExecutorOptions = {}): TaskExecutor {
@@ -127,7 +112,7 @@ function createChildWorkerEnv(options: ChildProcessTaskExecutorOptions, request:
         input: request.task.input,
       },
       handler: {
-        module: resolveModuleSpecifier(request.handler.entrypoint.module),
+        module: resolveTaskModuleSpecifier(request.handler.entrypoint.module),
         export: request.handler.entrypoint.export,
       },
     }),

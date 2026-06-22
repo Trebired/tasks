@@ -1,7 +1,9 @@
 import process from "node:process";
 
 import type { TaskHandlerModule, TaskTerminalError } from "#ksjjcxvzvz26";
-import { clampPercent, toErrorShape } from "#g6h3y0rvrh9n";
+import { toErrorShape } from "#g6h3y0rvrh9n";
+import { createTaskHandlerContext } from "#pomfbdrkgf10";
+import { loadTaskHandlerModule } from "#sqsl30t1mk0x";
 
 type ChildWorkerPayload = {
   task: {
@@ -53,22 +55,6 @@ function emit(message: ChildWorkerMessage): void {
   process.stdout.write(`${JSON.stringify(message)}\n`);
 }
 
-function resolveHandlerExport(mod: Record<string, unknown>, exportName?: string): TaskHandlerModule {
-  const candidate = exportName ? mod[exportName] : mod.default ?? mod.handler ?? mod;
-
-  if (typeof candidate === "function") {
-    return {
-      run: candidate as TaskHandlerModule["run"],
-    };
-  }
-
-  if (candidate && typeof candidate === "object" && typeof (candidate as TaskHandlerModule).run === "function") {
-    return candidate as TaskHandlerModule;
-  }
-
-  throw new Error(`Handler export "${exportName || "default"}" does not expose a run() function`);
-}
-
 async function main(): Promise<void> {
   const payload = readWorkerPayload();
   const handler = await loadWorkerHandler(payload);
@@ -99,8 +85,7 @@ function readWorkerPayload(): ChildWorkerPayload {
 }
 
 async function loadWorkerHandler(payload: ChildWorkerPayload): Promise<TaskHandlerModule> {
-  const mod = await import(payload.handler.module);
-  return resolveHandlerExport(mod as Record<string, unknown>, payload.handler.export);
+  return await loadTaskHandlerModule(payload.handler);
 }
 
 function bindProcessSignals(controller: AbortController): void {
@@ -110,41 +95,35 @@ function bindProcessSignals(controller: AbortController): void {
 }
 
 function createHandlerContext(payload: ChildWorkerPayload, signal: AbortSignal) {
-  return {
-    task: {
-      id: payload.task.id,
-      kind: payload.task.kind,
-      attempt: payload.task.attempt,
-      maxAttempts: payload.task.maxAttempts,
-      metadata: payload.task.metadata,
-      channels: payload.task.channels || [],
-      dedupeKey: payload.task.dedupeKey ?? null,
-      supersedeKey: payload.task.supersedeKey ?? null,
-    },
-    signal,
-    async setProgress(input) {
+  return createTaskHandlerContext({
+    id: payload.task.id,
+    kind: payload.task.kind,
+    attempt: payload.task.attempt,
+    maxAttempts: payload.task.maxAttempts,
+    metadata: payload.task.metadata,
+    channels: payload.task.channels || [],
+    dedupeKey: payload.task.dedupeKey ?? null,
+    supersedeKey: payload.task.supersedeKey ?? null,
+  }, signal, async (event) => {
+    if (event.type === "progress") {
       emit({
         type: "progress",
-        progress: {
-          percent: clampPercent(input.percent),
-          label: input.label ?? null,
-          meta: input.meta ?? null,
-        },
+        progress: event.progress,
       });
-    },
-    async appendStep(input) {
-      emit({
-        type: "step",
-        step: {
-          kind: input.kind ?? "step",
-          level: input.level ?? "info",
-          message: input.message || input.label || "step",
-          meta: input.meta ?? null,
-          percent: clampPercent(input.percent ?? input.progressPercent),
-        },
-      });
-    },
-  };
+      return;
+    }
+
+    emit({
+      type: "step",
+      step: {
+        kind: event.step.kind ?? "step",
+        level: event.step.level ?? "info",
+        message: event.step.message || event.step.label || "step",
+        meta: event.step.meta ?? null,
+        percent: event.step.percent ?? event.step.progressPercent ?? null,
+      },
+    });
+  });
 }
 
 void main();

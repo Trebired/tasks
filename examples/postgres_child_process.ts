@@ -1,7 +1,7 @@
 import { Pool } from "pg";
 import {
   createPostgresTaskStore,
-  createPostgresTaskStoreSchema,
+  preparePostgresTaskStoreSchema,
   createTaskHost,
 } from "#8t8bq600b4wu";
 
@@ -15,7 +15,9 @@ async function main() {
     connectionString: databaseUrl,
   });
 
-  await pool.query(createPostgresTaskStoreSchema());
+  await preparePostgresTaskStoreSchema({
+    client: pool,
+  });
 
   const tasks = createTaskHost({
     store: createPostgresTaskStore({

@@ -23,8 +23,21 @@ export {
   matchesTaskQuery,
   resolveTaskLifecycleState,
 } from "./core/snapshot.js";
+export {
+  createTaskLifecycleEvent,
+  normalizeTaskHostEvent,
+} from "./core/lifecycle.js";
 export { defineTaskHandler } from "./handler.js";
 export { createChildProcessTaskExecutor } from "./executor/child/process.js";
+export { createInProcessTaskExecutor } from "./executor/in_process.js";
+export {
+  createTaskHostEventAdapter,
+  createTaskLifecycleEventAdapter,
+} from "./events/adapters.js";
+export {
+  normalizeTaskHostEventEntry,
+  normalizeTaskLifecycleEventEntry,
+} from "./events/entry.js";
 export {
   createSubscriptionBootstrap,
   createTaskLiveHub,
@@ -33,12 +46,15 @@ export { attachTaskLiveSocketBridge } from "./live/socket_io.js";
 export { createTaskLiveTracker } from "./live/tracker.js";
 export {
   createPostgresTaskStore,
+  preparePostgresTaskStoreSchema,
   createPostgresTaskStoreSchema,
 } from "./storage/postgres.js";
 
 export type {
   TaskAggregateSnapshot,
   ChildProcessTaskExecutorOptions,
+  InProcessTaskExecutorOptions,
+  InProcessTaskModuleLoader,
   NormalizedTaskLogger,
   PostgresTaskPool,
   PostgresTaskPoolClient,
@@ -56,6 +72,9 @@ export type {
   TaskEnqueueDisposition,
   TaskEnqueueOptions,
   TaskEnqueueResult,
+  TaskEventEntry,
+  TaskEventEntrySink,
+  TaskEventEntryType,
   TaskExecutionHandle,
   TaskExecutor,
   TaskExecutorOutcome,

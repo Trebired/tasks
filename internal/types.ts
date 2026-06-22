@@ -36,6 +36,9 @@ export type {
   TaskUpdateProgressInput,
 } from "./types/store.js";
 export type {
+  TaskEventEntry,
+  TaskEventEntrySink,
+  TaskEventEntryType,
   TaskEnqueueOptions,
   TaskEnqueueResult,
   TaskExecutionHandle,
@@ -83,6 +86,8 @@ export type {
 } from "./types/logging.js";
 export type {
   ChildProcessTaskExecutorOptions,
+  InProcessTaskExecutorOptions,
+  InProcessTaskModuleLoader,
   PostgresTaskPool,
   PostgresTaskPoolClient,
   PostgresTaskQueryResult,

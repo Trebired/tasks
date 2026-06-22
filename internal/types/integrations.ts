@@ -26,6 +26,14 @@ export type PostgresTaskSchemaOptions = {
   tablePrefix?: string;
 };
 
+export type InProcessTaskModuleLoader = (
+  specifier: string,
+) => Promise<Record<string, unknown>>;
+
+export type InProcessTaskExecutorOptions = {
+  loadModule?: InProcessTaskModuleLoader;
+};
+
 export type ChildProcessTaskExecutorOptions = {
   command?: string;
   args?: string[];

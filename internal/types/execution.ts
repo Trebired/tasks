@@ -1,6 +1,7 @@
 import type { URL } from "node:url";
 
 import type {
+  TaskLifecycleState,
   TaskRecord,
   TaskStepKind,
   TaskStepLevel,
@@ -215,3 +216,29 @@ export type TaskLifecycleEvent = {
 };
 
 export type TaskLifecycleEventListener = (event: TaskLifecycleEvent) => void;
+
+export type TaskEventEntryType =
+  | TaskLifecycleEventName
+  | "runner_started"
+  | "runner_stopped"
+  | "stale_requeued";
+
+export type TaskEventEntry = {
+  type: TaskEventEntryType;
+  level: TaskStepLevel;
+  message: string;
+  percent: number | null;
+  timestamp: string;
+  metadata: Record<string, unknown> | null;
+  runnerId: string | null;
+  taskId: string | null;
+  kind: string | null;
+  state: TaskLifecycleState | null;
+  channels: string[];
+  stepId: string | null;
+};
+
+export type TaskEventEntrySink<TEvent> = (
+  entry: TaskEventEntry,
+  event: TEvent,
+) => void | Promise<void>;

@@ -85,7 +85,7 @@ Create a Postgres-backed host and start a runner:
 import { Pool } from "pg";
 import {
   createPostgresTaskStore,
-  createPostgresTaskStoreSchema,
+  preparePostgresTaskStoreSchema,
   createTaskHost,
   taskChannel,
 } from "@trebired/tasks";
@@ -94,7 +94,9 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
-await pool.query(createPostgresTaskStoreSchema());
+await preparePostgresTaskStoreSchema({
+  client: pool,
+});
 
 const tasks = createTaskHost({
   store: createPostgresTaskStore({
@@ -405,6 +407,53 @@ Lifecycle event names:
 
 Each normalized event carries the current snapshot when one exists, plus the step record for step events.
 
+## Generic Event Entries And Adapters
+
+When a consumer wants timeline rows, log entries, websocket payloads, or diagnostics records, the package now exposes presentation-friendly event entry helpers too:
+
+```ts
+import {
+  createTaskLifecycleEventAdapter,
+  normalizeTaskHostEventEntry,
+} from "@trebired/tasks";
+```
+
+The normalized entry shape stays generic:
+
+```ts
+type TaskEventEntry = {
+  type: TaskEventEntryType;
+  level: TaskStepLevel;
+  message: string;
+  percent: number | null;
+  timestamp: string;
+  metadata: Record<string, unknown> | null;
+  runnerId: string | null;
+  taskId: string | null;
+  kind: string | null;
+  state: TaskLifecycleState | null;
+  channels: string[];
+  stepId: string | null;
+};
+```
+
+Use the direct normalizers when you already have an event object:
+
+```ts
+const entry = normalizeTaskHostEventEntry(event);
+console.log(entry.type, entry.message, entry.percent);
+```
+
+Use the adapters when you want to forward normalized entries straight into another sink:
+
+```ts
+tasks.onLifecycleEvent(createTaskLifecycleEventAdapter((entry) => {
+  publishToTimeline(entry);
+}));
+```
+
+This keeps event parsing package-owned while still letting each host choose its own logging, websocket, notification, or storage layer.
+
 ## Bootstrap Plus Replay Flow
 
 The preferred real-time flow is:
@@ -585,7 +634,25 @@ This covers generic retention concerns such as:
 
 The core engine depends on a `TaskStore` contract. The first durable adapter is Postgres.
 
-Use the shipped schema helper:
+Use the package-owned schema preparation helper during startup:
+
+```ts
+import { preparePostgresTaskStoreSchema } from "@trebired/tasks";
+
+await preparePostgresTaskStoreSchema({
+  client: pool,
+  schema: "public",
+  tablePrefix: "tb_",
+});
+```
+
+That path is:
+
+- idempotent
+- safe to call repeatedly on boot
+- responsible for fresh schema creation and additive package-owned upgrades
+
+If the host wants the raw SQL for inspection or external migrations, the package still exposes:
 
 ```ts
 import { createPostgresTaskStoreSchema } from "@trebired/tasks";
@@ -618,7 +685,36 @@ That keeps claim and lease behavior transaction-owned instead of pretending a st
 
 The core engine still does not assume worker threads.
 
-Execution is abstracted behind `TaskExecutor`, and the default remains `createChildProcessTaskExecutor()`.
+Execution is abstracted behind `TaskExecutor`.
+
+The package now ships two first-class generic executors:
+
+- `createChildProcessTaskExecutor()`
+- `createInProcessTaskExecutor()`
+
+Use the in-process executor when the host wants task execution in the current runtime:
+
+```ts
+import {
+  createInProcessTaskExecutor,
+  createTaskHost,
+} from "@trebired/tasks";
+
+const tasks = createTaskHost({
+  store,
+  handlers,
+  executor: createInProcessTaskExecutor(),
+});
+```
+
+The in-process executor owns:
+
+- handler module loading and export resolution
+- cooperative cancellation through `AbortSignal`
+- progress and step forwarding
+- normalized failure shaping
+
+The default still remains `createChildProcessTaskExecutor()`.
 
 Why child process first:
 
@@ -634,6 +730,12 @@ Why Piscina is still only a future optional adapter:
 - making Piscina the core would leak a runtime-specific execution choice into the package’s main API
 
 In other words, child process is the conservative generic default. Piscina can fit later as an adapter without redefining the package.
+
+Why in-process is still not the default:
+
+- cancellation is cooperative, so the handler must respect `AbortSignal`
+- heavy synchronous work can still block the host event loop
+- process isolation is still the safer default for generic package-owned execution
 
 ## Core API
 
@@ -727,12 +829,18 @@ The first public slice is still deliberate rather than huge:
 import {
   attachTaskLiveSocketBridge,
   createChildProcessTaskExecutor,
+  createInProcessTaskExecutor,
   createPostgresTaskStore,
+  preparePostgresTaskStoreSchema,
   createPostgresTaskStoreSchema,
+  createTaskHostEventAdapter,
   createTaskHost,
+  createTaskLifecycleEventAdapter,
   createTaskLiveHub,
   createTaskLiveTracker,
   defineTaskHandler,
+  normalizeTaskHostEventEntry,
+  normalizeTaskLifecycleEventEntry,
   taskChannel,
 } from "@trebired/tasks";
 ```
@@ -744,6 +852,7 @@ Important exported types include:
 - `TaskProgressState`
 - `TaskStepRecord`
 - `TaskLifecycleEvent`
+- `TaskEventEntry`
 - `TaskSubscriptionQuery`
 - `TaskSubscriptionBootstrap`
 - `TaskStore`

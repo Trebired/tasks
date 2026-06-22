@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.0
+
+- Added a first-class in-process executor with package-owned handler module loading, cooperative cancellation, progress forwarding, step forwarding, and normalized error shaping.
+- Added generic event entry helpers and adapter utilities so hosts can forward task host and lifecycle events into logs, timelines, transports, and diagnostics layers without rebuilding parsing logic.
+- Added the package-owned `preparePostgresTaskStoreSchema()` startup helper for idempotent Postgres schema preparation and additive upgrades, including compatibility upgrades for older task tables missing `supersede_key`.
+
 ## 0.2.1
 
 - Fixed the published tarball metadata so `main`, `types`, and package-private alias imports resolve to files that actually exist in the packed `dist` output.

@@ -6,6 +6,7 @@ function createPostgresTaskStoreSchema(options: PostgresTaskSchemaOptions = {}):
   return [
     createSchemaSql(names.schema),
     createTasksTableSql(names),
+    ...createTaskUpgradeSql(names),
     createStepsTableSql(names),
     ...createIndexSql(names),
   ].join("\n\n").trim();
@@ -66,6 +67,12 @@ create table if not exists ${names.stepsQualified} (
 );`.trim();
 }
 
+function createTaskUpgradeSql(names: ReturnType<typeof resolveNames>): string[] {
+  return [
+    createAddColumnSql(names.tasksQualified, "supersede_key", "text"),
+  ];
+}
+
 function createIndexSql(names: ReturnType<typeof resolveNames>): string[] {
   return [
     createIndex(names, `${names.tasksTable}_status_scheduled_idx`, `${names.tasksQualified} (status, scheduled_at, created_at)`),
@@ -89,6 +96,13 @@ function createIndex(names: ReturnType<typeof resolveNames>, indexName: string, 
     `create index if not exists ${quoteIdentifier(indexName)}`,
     `  on ${target}`,
     where ? `  where ${where};` : ";",
+  ].join("\n");
+}
+
+function createAddColumnSql(table: string, columnName: string, definition: string): string {
+  return [
+    `alter table ${table}`,
+    `  add column if not exists ${quoteIdentifier(columnName)} ${definition};`,
   ].join("\n");
 }
 
