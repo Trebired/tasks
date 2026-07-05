@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { expect, test } from "bun:test";
 
 import {
   createInProcessTaskExecutor,
@@ -51,8 +51,7 @@ function createFixtureUrl(name: string): URL {
   return new URL(`../fixtures/${name}`, import.meta.url);
 }
 
-describe("createInProcessTaskExecutor", () => {
-  test("loads a handler module and forwards progress and steps", async () => {
+test("loads a handler module and forwards progress and steps", async () => {
     const executor = createInProcessTaskExecutor();
     const events: TaskExecutorProgressEvent[] = [];
     const handle = await executor.execute({
@@ -60,7 +59,7 @@ describe("createInProcessTaskExecutor", () => {
       handler: {
         kind: "example.run",
         entrypoint: {
-          module: createFixtureUrl("in_process_success.ts"),
+          module: createFixtureUrl("in/process/success.ts"),
         },
       },
       signal: new AbortController().signal,
@@ -99,16 +98,16 @@ describe("createInProcessTaskExecutor", () => {
         },
       },
     ]);
-  });
+});
 
-  test("returns failed outcomes with normalized errors", async () => {
+test("returns failed outcomes with normalized errors", async () => {
     const executor = createInProcessTaskExecutor();
     const handle = await executor.execute({
       task: createTaskRecord(),
       handler: {
         kind: "example.run",
         entrypoint: {
-          module: createFixtureUrl("in_process_failure.ts"),
+          module: createFixtureUrl("in/process/failure.ts"),
           export: "handler",
         },
       },
@@ -125,16 +124,16 @@ describe("createInProcessTaskExecutor", () => {
         },
       },
     });
-  });
+});
 
-  test("supports cooperative cancellation through AbortSignal", async () => {
+test("supports cooperative cancellation through AbortSignal", async () => {
     const executor = createInProcessTaskExecutor();
     const handle = await executor.execute({
       task: createTaskRecord(),
       handler: {
         kind: "example.run",
         entrypoint: {
-          module: createFixtureUrl("in_process_abort.ts"),
+          module: createFixtureUrl("in/process/abort.ts"),
         },
       },
       signal: new AbortController().signal,
@@ -145,5 +144,4 @@ describe("createInProcessTaskExecutor", () => {
     await expect(handle.completion).resolves.toMatchObject({
       status: "cancelled",
     });
-  });
 });

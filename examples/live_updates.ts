@@ -11,6 +11,8 @@ import type {
   TaskClaimNextOptions,
   TaskCreateInput,
   TaskCreateResult,
+  TaskExecutionHandle,
+  TaskExecutorRunRequest,
   TaskFailureInput,
   TaskLeaseInput,
   TaskLeaseRenewalInput,
@@ -238,36 +240,12 @@ class MemoryTaskStore implements TaskStore {
   }
 }
 
-async function main() {
-  const store = new MemoryTaskStore();
-  const host = createTaskHost({
+function createLiveDemoHost(store: MemoryTaskStore) {
+  return createTaskHost({
     store,
     executor: {
       async execute(request) {
-        await request.onEvent?.({
-          type: "progress",
-          progress: {
-            percent: 30,
-            label: "loading",
-          },
-        });
-
-        await request.onEvent?.({
-          type: "step",
-          step: {
-            message: "Source loaded",
-            percent: 30,
-          },
-        });
-
-        await request.onEvent?.({
-          type: "progress",
-          progress: {
-            percent: 100,
-            label: "done",
-          },
-        });
-
+        await emitLiveDemoEvents(request);
         return {
           async cancel() {
             return;
@@ -290,10 +268,36 @@ async function main() {
       },
     ],
   });
+}
 
-  const hub = createTaskLiveHub(host);
-  const tracker = createTaskLiveTracker();
+async function emitLiveDemoEvents(request: Pick<TaskExecutorRunRequest, "onEvent">) {
+  await request.onEvent?.({
+    type: "progress",
+    progress: {
+      percent: 30,
+      label: "loading",
+    },
+  });
+  await request.onEvent?.({
+    type: "step",
+    step: {
+      message: "Source loaded",
+      percent: 30,
+    },
+  });
+  await request.onEvent?.({
+    type: "progress",
+    progress: {
+      percent: 100,
+      label: "done",
+    },
+  });
+}
 
+async function subscribeToDemoUpdates(
+  hub: ReturnType<typeof createTaskLiveHub>,
+  tracker: ReturnType<typeof createTaskLiveTracker>,
+) {
   await hub.subscribe({
     channels: [
       taskChannel.scope("workspace:demo"),
@@ -306,7 +310,15 @@ async function main() {
       console.log(current.state, current.progress.percent, current.progress.label);
     }
   });
+}
 
+async function main() {
+  const store = new MemoryTaskStore();
+  const host = createLiveDemoHost(store);
+  const hub = createTaskLiveHub(host);
+  const tracker = createTaskLiveTracker();
+
+  await subscribeToDemoUpdates(hub, tracker);
   await host.start();
   await host.enqueue("report.generate", {
     reportId: "rpt_live",

@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { expect, test } from "bun:test";
 
 import {
   createTaskHostEventAdapter,
@@ -69,8 +69,7 @@ function createStep(): TaskStepRecord {
   };
 }
 
-describe("task event helpers", () => {
-  test("normalizes lifecycle events into presentation-friendly entries", () => {
+test("normalizes lifecycle events into presentation-friendly entries", () => {
     const task = createTaskRecord();
     const step = createStep();
     const event: TaskLifecycleEvent = {
@@ -109,9 +108,9 @@ describe("task event helpers", () => {
       channels: ["scope:tests", "topic:events"],
       stepId: "step_1",
     });
-  });
+});
 
-  test("normalizes host runner events without consumer parsing", () => {
+test("normalizes host runner events without consumer parsing", () => {
     const event: TaskHostEvent = {
       type: "runner:start",
       timestamp: new Date().toISOString(),
@@ -124,9 +123,9 @@ describe("task event helpers", () => {
       message: "Task runner started",
       runnerId: "runner_test",
     });
-  });
+});
 
-  test("creates lifecycle adapters that forward normalized entries", async () => {
+test("creates lifecycle adapters that forward normalized entries", async () => {
     const task = createTaskRecord();
     const event: TaskLifecycleEvent = {
       type: "task.lifecycle",
@@ -169,9 +168,9 @@ describe("task event helpers", () => {
         sourceType: "succeeded",
       },
     ]);
-  });
+});
 
-  test("creates host adapters that forward normalized entries", async () => {
+test("creates host adapters that forward normalized entries", async () => {
     const task = createTaskRecord();
     const event: TaskHostEvent = {
       type: "task:failed",
@@ -210,5 +209,4 @@ describe("task event helpers", () => {
         sourceType: "task:failed",
       },
     ]);
-  });
 });

@@ -2,7 +2,7 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { describe, expect, test } from "bun:test";
+import { expect, test } from "bun:test";
 
 import {
   createInProcessTaskExecutor,
@@ -38,105 +38,105 @@ async function waitForTaskCompletion(
   throw new Error(`Timed out waiting for task ${taskId}`);
 }
 
-describe("@trebired/tasks sqlite store", () => {
-  test("supports the generic sqlite store factory and persists task history", async () => {
-    const directory = await mkdtemp(join(tmpdir(), "trebired-tasks-sqlite-"));
-    const path = join(directory, "tasks.sqlite");
+function createSqliteStoreOptions(path: string) {
+  return {
+    driver: "sqlite" as const,
+    sqlite: {
+      path,
+    },
+  };
+}
 
-    try {
-      const schemaSql = createTaskStoreSchema({
-        driver: "sqlite",
-        sqlite: {
-          path,
+function createSqliteTaskHost(path: string) {
+  return createTaskHost({
+    store: createTaskStore(createSqliteStoreOptions(path)),
+    executor: createInProcessTaskExecutor(),
+    handlers: [
+      {
+        kind: "example.run",
+        entrypoint: {
+          module: createFixtureUrl("in/process/success.ts"),
         },
-      });
+      },
+    ],
+    runner: {
+      globalConcurrency: 1,
+      pollIntervalMs: 10,
+      heartbeatMs: 20,
+      leaseMs: 100,
+    },
+  });
+}
 
-      expect(schemaSql.includes("create table if not exists \"tb_tasks\"")).toBe(true);
-      expect(schemaSql.includes("create unique index if not exists \"tb_tasks_open_dedupe_idx\"")).toBe(true);
+async function withTempSqliteDirectory<T>(run: (directory: string, path: string) => Promise<T>): Promise<T> {
+  const directory = await mkdtemp(join(tmpdir(), "trebired-tasks-sqlite-"));
+  const path = join(directory, "tasks.sqlite");
+  try {
+    return await run(directory, path);
+  } finally {
+    await rm(directory, {
+      force: true,
+      recursive: true,
+    });
+  }
+}
 
-      await prepareTaskStoreSchema({
-        driver: "sqlite",
-        sqlite: {
-          path,
-        },
-      });
+function expectSqliteSnapshot(snapshot: Awaited<ReturnType<ReturnType<typeof createTaskHost>["readSnapshot"]>>) {
+  expect(snapshot?.state).toBe("succeeded");
+  expect(snapshot?.output).toEqual({
+    echoed: "sqlite",
+  });
+  expect(snapshot?.steps?.map((step) => step.message)).toEqual([
+    "Halfway there",
+  ]);
+}
 
-      const store = createTaskStore({
-        driver: "sqlite",
-        sqlite: {
-          path,
-        },
-      });
-      const tasks = createTaskHost({
-        store,
-        executor: createInProcessTaskExecutor(),
-        handlers: [
-          {
-            kind: "example.run",
-            entrypoint: {
-              module: createFixtureUrl("in_process_success.ts"),
-            },
-          },
-        ],
-        runner: {
-          globalConcurrency: 1,
-          pollIntervalMs: 10,
-          heartbeatMs: 20,
-          leaseMs: 100,
-        },
-      });
+async function expectPersistedTask(path: string, taskId: string) {
+  const reopened = createTaskStore(createSqliteStoreOptions(path));
+  const persisted = await reopened.getTask(taskId);
+  const steps = await reopened.listTaskSteps(taskId);
 
-      await tasks.start();
+  expect(persisted?.output).toEqual({
+    echoed: "sqlite",
+  });
+  expect(steps).toHaveLength(1);
+  expect(steps[0]?.message).toBe("Halfway there");
+}
 
-      const queued = await tasks.enqueue("example.run", {
-        value: "sqlite",
-      }, {
-        dedupeKey: "example:sqlite",
-        concurrencyKey: "example:sqlite",
-        channels: [
-          taskChannel.scope("sqlite"),
-        ],
-      });
-      const duplicate = await tasks.enqueue("example.run", {
-        value: "sqlite",
-      }, {
-        dedupeKey: "example:sqlite",
-      });
+test("supports the generic sqlite store factory and persists task history", async () => {
+  await withTempSqliteDirectory(async (_directory, path) => {
+    const schemaSql = createTaskStoreSchema(createSqliteStoreOptions(path));
 
-      expect(duplicate.disposition).toBe("reused");
-      expect(duplicate.task.id).toBe(queued.task.id);
+    expect(schemaSql.includes("create table if not exists \"tb_tasks\"")).toBe(true);
+    expect(schemaSql.includes("create unique index if not exists \"tb_tasks_open_dedupe_idx\"")).toBe(true);
 
-      const snapshot = await waitForTaskCompletion(tasks, queued.task.id);
+    await prepareTaskStoreSchema(createSqliteStoreOptions(path));
+    const tasks = createSqliteTaskHost(path);
 
-      expect(snapshot?.state).toBe("succeeded");
-      expect(snapshot?.output).toEqual({
-        echoed: "sqlite",
-      });
-      expect(snapshot?.steps?.map((step) => step.message)).toEqual([
-        "Halfway there",
-      ]);
+    await tasks.start();
 
-      await tasks.stop();
+    const queued = await tasks.enqueue("example.run", {
+      value: "sqlite",
+    }, {
+      dedupeKey: "example:sqlite",
+      concurrencyKey: "example:sqlite",
+      channels: [
+        taskChannel.scope("sqlite"),
+      ],
+    });
+    const duplicate = await tasks.enqueue("example.run", {
+      value: "sqlite",
+    }, {
+      dedupeKey: "example:sqlite",
+    });
 
-      const reopened = createTaskStore({
-        driver: "sqlite",
-        sqlite: {
-          path,
-        },
-      });
-      const persisted = await reopened.getTask(queued.task.id);
-      const steps = await reopened.listTaskSteps(queued.task.id);
+    expect(duplicate.disposition).toBe("reused");
+    expect(duplicate.task.id).toBe(queued.task.id);
 
-      expect(persisted?.output).toEqual({
-        echoed: "sqlite",
-      });
-      expect(steps).toHaveLength(1);
-      expect(steps[0]?.message).toBe("Halfway there");
-    } finally {
-      await rm(directory, {
-        force: true,
-        recursive: true,
-      });
-    }
+    const snapshot = await waitForTaskCompletion(tasks, queued.task.id);
+    expectSqliteSnapshot(snapshot);
+
+    await tasks.stop();
+    await expectPersistedTask(path, queued.task.id);
   });
 });

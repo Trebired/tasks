@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { expect, test } from "bun:test";
 
 import {
   createTaskStoreSchema,
@@ -111,8 +111,7 @@ function createTaskRow(params: unknown[]): Record<string, unknown> {
   };
 }
 
-describe("@trebired/tasks postgres upgrade", () => {
-  test("adds supersede_key upgrade sql to the package-owned schema", () => {
+test("adds supersede_key upgrade sql to the package-owned schema", () => {
     const sql = createPostgresTaskStoreSchema();
     const genericSql = createTaskStoreSchema({
       driver: "postgres",
@@ -122,9 +121,9 @@ describe("@trebired/tasks postgres upgrade", () => {
     expect(sql.includes("create index if not exists \"tb_tasks_supersede_key_idx\"")).toBe(true);
     expect(sql.includes("where supersede_key is not null")).toBe(true);
     expect(genericSql).toBe(sql);
-  });
+});
 
-  test("prepares older task tables so supersede-backed inserts stop failing", async () => {
+test("prepares older task tables so supersede-backed inserts stop failing", async () => {
     const client = new LegacySupersedePool();
     const store = createPostgresTaskStore({
       client,
@@ -163,5 +162,4 @@ describe("@trebired/tasks postgres upgrade", () => {
     expect(created.task.supersedeKey).toBe("report:rpt_42");
     expect(client.supersedeColumnReady).toBe(true);
     expect(client.supersedeIndexReady).toBe(true);
-  });
 });
