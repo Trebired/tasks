@@ -31,15 +31,15 @@ export default {
     dry: {
       helpers: [
         {
-          from: "./internal/core/utils.ts",
+          from: "./src/core/utils.ts",
           exportName: "clampPercent",
         },
         {
-          from: "./internal/core/utils.ts",
+          from: "./src/core/utils.ts",
           exportName: "nowIso",
         },
         {
-          from: "./internal/core/utils.ts",
+          from: "./src/core/utils.ts",
           exportName: "toRecord",
         },
       ],

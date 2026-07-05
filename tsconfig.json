@@ -12,16 +12,16 @@
     "noEmit": true,
     "paths": {
       "#0bba403f3e43": [
-        "./internal/constants.ts"
+        "./src/constants.ts"
       ],
       "#1op41bzcon2b": [
-        "./internal/storage/sqlite/stale.ts"
+        "./src/storage/sqlite/stale.ts"
       ],
       "#1pvhw6mfmf40": [
         "./.tmp/verify-pack/consumer/index.ts"
       ],
       "#1quj02prq092": [
-        "./internal/storage/postgres/prepare.ts"
+        "./src/storage/postgres/prepare.ts"
       ],
       "#25ads0k0iiwf": [
         "./test/specs/events.spec.ts"
@@ -30,22 +30,19 @@
         "./src/types.ts"
       ],
       "#324vg11cn8jm": [
-        "./internal/types/core.ts"
+        "./src/types/core.ts"
       ],
       "#32g8np5v5jpb": [
-        "./internal/types/integrations.ts"
-      ],
-      "#3c8d8166992a": [
-        "./internal/types.ts"
+        "./src/types/integrations.ts"
       ],
       "#3eil9krdpowm": [
-        "./internal/storage/sqlite/completion.ts"
+        "./src/storage/sqlite/completion.ts"
       ],
       "#46dyf1lsttcu": [
         "./tb.code-discipline.ts"
       ],
       "#4bd798a4d972": [
-        "./internal/executor/child/process.ts"
+        "./src/executor/child/process.ts"
       ],
       "#4xg12aru9hri": [
         "./src/live/tracker.ts"
@@ -54,139 +51,118 @@
         "./test/fixtures/in/process/failure.ts"
       ],
       "#4zlveofcxkd3": [
-        "./internal/events/entry.ts"
+        "./src/events/entry.ts"
       ],
       "#54ms815v3mol": [
         "./src/executor/child/process_worker.ts"
       ],
       "#5b0505fd2b8d": [
-        "./internal/storage/postgres.ts"
-      ],
-      "#5dtdwzlie8fm": [
-        "./src/constants.ts"
+        "./src/storage/postgres.ts"
       ],
       "#5kfgvm110fl3": [
-        "./internal/core/host/pump.ts"
+        "./src/core/host/pump.ts"
       ],
       "#657abf96f340": [
-        "./internal/core/snapshot.ts"
+        "./src/core/snapshot.ts"
       ],
       "#6hgrn69s91pw": [
         "./src/handler.ts"
       ],
       "#6kuftr73uwbj": [
-        "./internal/storage/sqlite.ts"
+        "./src/storage/sqlite.ts"
       ],
       "#7323401cd694": [
-        "./internal/live/socket_io.ts"
+        "./src/live/socket_io.ts"
       ],
       "#75srh6ggznxe": [
-        "./internal/storage/sqlite/read.ts"
+        "./src/storage/sqlite/read.ts"
       ],
       "#78t73r76gox8": [
         "./src/core/retry.ts"
       ],
       "#7lui9w1975hy": [
-        "./internal/storage/create.ts"
+        "./src/storage/create.ts"
       ],
       "#7pyqz6c5ptp3": [
         "./test/specs/core/store.spec.ts"
       ],
       "#87337d1a79d6": [
-        "./internal/backend/utils/time.ts"
+        "./src/backend/utils/time.ts"
       ],
       "#8942387ee1fc": [
-        "./internal/core/channels.ts"
+        "./src/core/channels.ts"
       ],
       "#8esv3y30elil": [
         "./src/backend/utils/normalize.ts"
       ],
       "#8lcinqdptinq": [
-        "./internal/storage/sqlite/schema.ts"
+        "./src/storage/sqlite/schema.ts"
       ],
       "#8t8bq600b4wu": [
         "./src/index.ts"
       ],
       "#92c6666f713d": [
-        "./internal/core/utils.ts"
+        "./src/core/utils.ts"
       ],
       "#9652e5354aa6": [
-        "./internal/frontend/js/utils/text.ts"
-      ],
-      "#9cba595a238d": [
-        "./internal/core/retry.ts"
-      ],
-      "#a02b8941b739": [
-        "./internal/live/tracker.ts"
+        "./src/frontend/js/utils/text.ts"
       ],
       "#a0iq0qaerho6": [
-        "./internal/executor/in_process.ts"
+        "./src/executor/in_process.ts"
       ],
       "#a9f2fec2aeaf": [
-        "./internal/live/hub.ts"
+        "./src/live/hub.ts"
       ],
       "#a9onnk5l7mwk": [
         "./test/specs/core/live.spec.ts"
       ],
       "#asml8souabdl": [
-        "./internal/storage/postgres/create_task.ts"
+        "./src/storage/postgres/create_task.ts"
       ],
       "#au2yc05uydyb": [
-        "./internal/types/store.ts"
+        "./src/types/store.ts"
       ],
       "#az2db012axb6": [
-        "./internal/core/host/execution/events.ts"
+        "./src/core/host/execution/events.ts"
       ],
       "#b3d930a4472b": [
-        "./internal/core/lifecycle.ts"
+        "./src/core/lifecycle.ts"
       ],
       "#b7dab5b5b35e": [
-        "./internal/core/host.ts"
-      ],
-      "#bcca6b017a35": [
-        "./internal/handler.ts"
+        "./src/core/host.ts"
       ],
       "#biii09owpug7": [
-        "./internal/core/host/execution.ts"
+        "./src/core/host/execution.ts"
       ],
       "#blri5p7r9rdz": [
-        "./internal/storage/postgres/retention.ts"
+        "./src/storage/postgres/retention.ts"
       ],
       "#c573drfw1bna": [
-        "./internal/types/execution.ts"
+        "./src/types/execution.ts"
       ],
       "#c8rzqw0hrvb5": [
-        "./internal/storage/sqlite/query.ts"
+        "./src/storage/sqlite/query.ts"
       ],
       "#cc76e7b18894": [
-        "./internal/core/emitter.ts"
+        "./src/core/emitter.ts"
       ],
       "#cit9wedxgmse": [
         "./examples/live_updates.ts"
       ],
       "#crbgm8igwe8k": [
-        "./internal/storage/sqlite/retention.ts"
+        "./src/storage/sqlite/retention.ts"
       ],
       "#crp5itx075gf": [
-        "./internal/storage/sqlite/progress.ts"
-      ],
-      "#d28441ffa4df": [
-        "./internal/executor/child/process_worker.ts"
+        "./src/storage/sqlite/progress.ts"
       ],
       "#d66a914eb693": [
-        "./internal/backend/utils/object.ts"
+        "./src/backend/utils/object.ts"
       ],
       "#d73laskis6vs": [
-        "./internal/core/host/control.ts"
-      ],
-      "#dagzoln5nq38": [
-        "./src/core/emitter.ts"
+        "./src/core/host/control.ts"
       ],
       "#dr35ne87cx7z": [
         "./examples/sqlite_in_process.ts"
-      ],
-      "#dt78y5c38qmz": [
-        "./src/executor/child/process.ts"
       ],
       "#e1bb85n4eyt5": [
         "./test/specs/executor_in_process.spec.ts"
@@ -194,134 +170,101 @@
       "#e6uypkdc8qrw": [
         "./test/specs/postgres_upgrade.spec.ts"
       ],
-      "#ebe51631bc41": [
-        "./internal/backend/utils/normalize.ts"
-      ],
       "#eg85mujor6zc": [
         "./examples/handlers/report_task.ts"
       ],
-      "#ekwfcm811ffj": [
-        "./src/storage/postgres.ts"
-      ],
-      "#fcd73bf294d5": [
-        "./internal/index.ts"
-      ],
       "#fda93rpnc38d": [
-        "./internal/storage/prepare.ts"
+        "./src/storage/prepare.ts"
       ],
       "#g6h3y0rvrh9n": [
-        "./internal/executor/core/utils.ts"
+        "./src/executor/core/utils.ts"
       ],
       "#glwr8hhdwatp": [
-        "./internal/storage/postgres/progress.ts"
+        "./src/storage/postgres/progress.ts"
       ],
       "#gmlimgcb4maz": [
         "./test/specs/core/support/helpers.ts"
       ],
       "#gydybjagu7ke": [
-        "./internal/storage/postgres/read.ts"
+        "./src/storage/postgres/read.ts"
       ],
       "#gyy119bqzslz": [
         "./test/specs/sqlite_store.spec.ts"
       ],
       "#h92hqm8bmd08": [
-        "./internal/events/adapters.ts"
+        "./src/events/adapters.ts"
       ],
       "#ha835zo6d5wl": [
-        "./internal/core/host/execution/outcome.ts"
-      ],
-      "#ir9grtwyf3f1": [
-        "./src/core/snapshot.ts"
+        "./src/core/host/execution/outcome.ts"
       ],
       "#j8uzfjaspgww": [
-        "./internal/storage/postgres/completion.ts"
+        "./src/storage/postgres/completion.ts"
       ],
       "#ksjjcxvzvz26": [
-        "./internal/executor/types.ts"
+        "./src/executor/types.ts"
       ],
       "#l2y5agh1cx5y": [
-        "./internal/core/host/query.ts"
-      ],
-      "#mfyxk9qyprji": [
-        "./src/backend/utils/time.ts"
-      ],
-      "#mxw6vdowgo5u": [
-        "./src/backend/utils/object.ts"
+        "./src/core/host/query.ts"
       ],
       "#nfgdjd5w5wyu": [
-        "./internal/storage/sqlite/create.ts"
+        "./src/storage/sqlite/create.ts"
       ],
       "#o6zvxk2y9eyi": [
-        "./internal/storage/sqlite/prepare.ts"
+        "./src/storage/sqlite/prepare.ts"
       ],
       "#ob6x1nk2j7vm": [
-        "./internal/storage/postgres/shared.ts"
+        "./src/storage/postgres/shared.ts"
       ],
       "#ol21k2hutjja": [
-        "./internal/storage/postgres/create.ts"
+        "./src/storage/postgres/create.ts"
       ],
       "#otwuc8yg7odm": [
-        "./internal/storage/sqlite/create_task.ts"
-      ],
-      "#pkwdsiow3z0r": [
-        "./src/core/host.ts"
+        "./src/storage/sqlite/create_task.ts"
       ],
       "#pomfbdrkgf10": [
-        "./internal/executor/core/context.ts"
-      ],
-      "#q4zqk1pa2bf3": [
-        "./src/live/hub.ts"
+        "./src/executor/core/context.ts"
       ],
       "#qvcb2g8s7ali": [
-        "./internal/storage/sqlite/shared.ts"
-      ],
-      "#qysd2ddsh0x8": [
-        "./src/core/utils.ts"
+        "./src/storage/sqlite/shared.ts"
       ],
       "#s0xpeq82303v": [
         "./test/fixtures/in/process/abort.ts"
       ],
       "#sf3e7dp3vrpr": [
-        "./internal/core/host/create.ts"
+        "./src/core/host/create.ts"
       ],
       "#simeu26xdjzl": [
         "./test/fixtures/in/process/success.ts"
       ],
       "#sqsl30t1mk0x": [
-        "./internal/executor/core/module.ts"
+        "./src/executor/core/module.ts"
       ],
       "#syzi929orlyn": [
-        "./internal/core/host/lifecycle.ts"
+        "./src/core/host/lifecycle.ts"
       ],
       "#tig014h1m5ya": [
-        "./internal/storage/postgres/query.ts"
-      ],
-      "#tlmmwtup61ur": [
-        "./src/frontend/js/utils/text.ts"
+        "./src/storage/postgres/query.ts"
       ],
       "#u0u9wbvj9ruq": [
-        "./internal/storage/sqlite/claim.ts"
+        "./src/storage/sqlite/claim.ts"
       ],
       "#uahcacqyvf55": [
-        "./internal/types/live.ts"
-      ],
-      "#uoebp0pptz9i": [
-        "./src/core/lifecycle.ts"
+        "./src/types/live.ts"
       ],
       "#uxqeannvmov6": [
-        "./internal/storage/postgres/cancel.ts"
+        "./src/storage/postgres/cancel.ts"
       ],
       "#v5o08m17gfd8": [
-        "./internal/storage/schema.ts"
+        "./src/storage/schema.ts"
       ],
       "#v92x6m6hs2ca": [
-        "./internal/storage/sqlite/cancel.ts"
+        "./src/storage/sqlite/cancel.ts"
       ],
       "#vonxmuhsw6v5": [
         "./test/specs/core/support/live.ts"
       ],
       "#w9meabof3geh": [
-        "./internal/types/logging.ts"
+        "./src/types/logging.ts"
       ],
       "#wz1pase2z29p": [
         "./test/specs/core/support/store.ts"
@@ -329,23 +272,17 @@
       "#x4nwrc2d1b82": [
         "./examples/postgres_child_process.ts"
       ],
-      "#xx6ozac2scdj": [
-        "./src/core/channels.ts"
-      ],
       "#xz14dle437cx": [
-        "./internal/storage/postgres/schema.ts"
+        "./src/storage/postgres/schema.ts"
       ],
       "#y16wneppxm2s": [
-        "./internal/storage/postgres/stale.ts"
+        "./src/storage/postgres/stale.ts"
       ],
       "#y9hhox9e7r0o": [
-        "./internal/storage/postgres/claim.ts"
+        "./src/storage/postgres/claim.ts"
       ],
       "#yjfcvxwh42t2": [
-        "./internal/core/host/context.ts"
-      ],
-      "#yufkriqjbdny": [
-        "./src/live/socket_io.ts"
+        "./src/core/host/context.ts"
       ],
       "#zfvdsydqg1sk": [
         "./test/specs/core/runtime.spec.ts"
@@ -364,7 +301,6 @@
     "node_modules"
   ],
   "include": [
-    "internal/**/*.ts",
     "examples/**/*.ts",
     "src/**/*.ts",
     "test/**/*.ts"
