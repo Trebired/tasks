@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.1
+
+- adopt `@trebired/result` as the package-owned backend result surface for touched executor, storage, and runtime communication paths instead of local result wrappers
+- continue enforcing current `@trebired/code-discipline` expectations across the touched examples, fixtures, and specs while preserving the public task host and store APIs
+
 ## 1.1.0
 
 - Added a backend-agnostic public storage happy path with `createTaskStore(...)`, `prepareTaskStoreSchema(...)`, and `createTaskStoreSchema(...)`, with backend selection driven by explicit `driver` options instead of backend names in the main API.
