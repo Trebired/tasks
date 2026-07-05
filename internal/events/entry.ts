@@ -74,6 +74,7 @@ function createLifecycleMetadata(event: TaskLifecycleEvent): Record<string, unkn
     disposition: event.disposition,
     error: event.error,
     output: event.output,
+    result: event.result,
     progressLabel: event.snapshot?.progress.label ?? null,
     progressMeta: event.snapshot?.progress.meta ?? null,
     stepKind: event.step?.kind ?? null,

@@ -1,3 +1,4 @@
+import { result } from "@trebired/result";
 import type {
   TaskExecutorOutcome,
   TaskHandlerRegistration,
@@ -38,6 +39,12 @@ async function handleLostTaskLease(context: TaskHostContext, running: RunningExe
     taskId: running.task.id,
     kind: running.task.kind,
     task: running.task,
+    result: result.conflict("task-lease-lost", "Task lease was lost during execution.", {
+      details: {
+        runnerId: context.runnerId,
+        taskId: running.task.id,
+      },
+    }),
   });
 }
 
@@ -57,6 +64,15 @@ async function failTaskExecution(context: TaskHostContext, task: TaskRecord, err
     kind: task.kind,
     task: failed,
     error,
+    result: result.internal("task-failed", "Task execution failed.", {
+      details: {
+        runnerId: context.runnerId,
+        taskId: task.id,
+      },
+      meta: {
+        error: toErrorShape(error),
+      },
+    }),
   });
 }
 
@@ -106,6 +122,13 @@ async function markTaskSucceeded(context: TaskHostContext, running: RunningExecu
     kind: running.task.kind,
     task,
     output,
+    result: result.ok("Task execution succeeded.", {
+      data: output ?? null,
+      details: {
+        runnerId: context.runnerId,
+        taskId: running.task.id,
+      },
+    }),
   });
 }
 
@@ -124,6 +147,12 @@ async function markTaskCancelled(context: TaskHostContext, running: RunningExecu
     taskId: running.task.id,
     kind: running.task.kind,
     task,
+    result: result.noop("task-cancelled", reason || "Task cancelled.", {
+      details: {
+        runnerId: context.runnerId,
+        taskId: running.task.id,
+      },
+    }),
   });
 }
 
@@ -159,6 +188,15 @@ async function handleTaskFailureOutcome(
     kind: running.task.kind,
     task,
     error,
+    result: result.internal("task-failed", "Task execution failed.", {
+      details: {
+        runnerId: context.runnerId,
+        taskId: running.task.id,
+      },
+      meta: {
+        error,
+      },
+    }),
   });
 }
 
@@ -183,6 +221,16 @@ async function requeueFailedTask(
     kind: running.task.kind,
     task,
     error,
+    result: result.noop("task-retry-scheduled", "Task scheduled for retry.", {
+      details: {
+        runnerId: context.runnerId,
+        scheduledAt: nowIso(scheduledAt),
+        taskId: running.task.id,
+      },
+      meta: {
+        error,
+      },
+    }),
   });
 }
 

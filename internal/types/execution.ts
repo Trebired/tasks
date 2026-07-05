@@ -137,6 +137,8 @@ export type TaskExecutorRunRequest = {
   onEvent?: (event: TaskExecutorProgressEvent) => void | Promise<void>;
 };
 
+import type { ResultLike } from "@trebired/result";
+
 export type TaskExecutionHandle = {
   cancel: (reason?: string) => Promise<void>;
   completion: Promise<TaskExecutorOutcome>;
@@ -176,6 +178,7 @@ export type TaskHostEvent =
       step?: import("./core.js").TaskStepRecord | null;
       error?: TaskTerminalError | unknown;
       output?: unknown;
+      result?: ResultLike;
     }
   | {
       type: "task:stale_requeued";
@@ -213,6 +216,7 @@ export type TaskLifecycleEvent = {
   supersededTaskIds?: string[];
   error?: TaskTerminalError | unknown;
   output?: unknown;
+  result?: ResultLike;
 };
 
 export type TaskLifecycleEventListener = (event: TaskLifecycleEvent) => void;

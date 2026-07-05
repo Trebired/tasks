@@ -58,6 +58,7 @@ function createTaskLifecycleEvent(input: {
   supersededTaskIds?: string[];
   error?: unknown;
   output?: unknown;
+  result?: TaskLifecycleEvent["result"];
 }): TaskLifecycleEvent {
   return {
     type: "task.lifecycle",
@@ -73,6 +74,7 @@ function createTaskLifecycleEvent(input: {
     supersededTaskIds: input.supersededTaskIds,
     error: input.error,
     output: input.output,
+    result: input.result,
   };
 }
 
@@ -117,6 +119,7 @@ function normalizeTaskHostEvent(event: TaskHostEvent): TaskLifecycleEvent | null
     supersededTaskIds: taskEvent.supersededTaskIds,
     error: taskEvent.error,
     output: taskEvent.output,
+    result: taskEvent.result,
   });
 }
 
