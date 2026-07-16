@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.2
+
+- Moved package-owned task host logging under the `trebired.tasks` group root.
+
 ## 1.1.1
 
 - adopt `@trebired/result` as the package-owned backend result surface for touched executor, storage, and runtime communication paths instead of local result wrappers

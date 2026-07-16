@@ -1,4 +1,4 @@
-const TASKS_LOG_GROUP = "@trebired/tasks";
+const TASKS_LOG_GROUP = "trebired.tasks";
 
 const DEFAULT_TASK_GLOBAL_CONCURRENCY = 4;
 const DEFAULT_TASK_POLL_INTERVAL_MS = 1_000;
