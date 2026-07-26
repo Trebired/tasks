@@ -479,7 +479,7 @@ const unsubscribe = await hub.subscribe({
 });
 ```
 
-That bootstrap-first model is package-owned specifically so apps do not need to invent one-off “give me current state, then also subscribe” protocols every time.
+That bootstrap-first model is package-owned specifically so apps do not need to invent one-off "give me current state, then also subscribe" protocols every time.
 
 ## Tiny Client Helper
 
@@ -560,7 +560,7 @@ const result = await tasks.enqueue("scan.repository", payload, {
 console.log(result.supersededTaskIds);
 ```
 
-This is useful for “already in progress” and “newer request replaced older request” UX without each app inventing its own semantics.
+This is useful for "already in progress" and "newer request replaced older request" UX without each app inventing its own semantics.
 
 ## Stale And Watchdog Behavior
 
@@ -587,9 +587,9 @@ What that means:
 
 In practice this lets UIs show:
 
-- “still running”
-- “retry scheduled”
-- “stale, runner may be gone”
+- "still running"
+- "retry scheduled"
+- "stale, runner may be gone"
 
 without app-owned timeout heuristics.
 
@@ -791,7 +791,7 @@ Why Piscina is still only a future optional adapter:
 
 - Piscina is useful for Node-specific worker-thread workloads
 - Bun and Node do not share the same worker-thread assumptions
-- making Piscina the core would leak a runtime-specific execution choice into the package’s main API
+- making Piscina the core would leak a runtime-specific execution choice into the package's main API
 
 In other words, child process is the conservative generic default. Piscina can fit later as an adapter without redefining the package.
 
