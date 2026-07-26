@@ -124,7 +124,7 @@ async function markTaskSucceeded(context: TaskHostContext, running: RunningExecu
     kind: running.task.kind,
     task,
     output,
-    result: result.ok("Task execution succeeded.", {
+    result: result.ok("task-execution-succeeded", {
       data: output ?? null,
       details: {
         runnerId: context.runnerId,

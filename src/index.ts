@@ -17,6 +17,7 @@ export {
   DEFAULT_TASK_STALE_SCAN_LIMIT,
   DEFAULT_TASK_STOP_TIMEOUT_MS,
   TASKS_LOG_GROUP,
+  TASKS_PACKAGE_NAME,
 } from "./constants.js";
 export {
   normalizeTaskChannel,

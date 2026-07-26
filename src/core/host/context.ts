@@ -9,6 +9,7 @@ import {
   DEFAULT_TASK_STALE_SCAN_INTERVAL_MS,
   DEFAULT_TASK_STALE_SCAN_LIMIT,
   DEFAULT_TASK_STOP_TIMEOUT_MS,
+  TASKS_PACKAGE_NAME,
   TASKS_LOG_GROUP,
 } from "#0bba403f3e43";
 import type {
@@ -78,7 +79,7 @@ function createTaskHostContext(options: TaskHostOptions): TaskHostContext {
     logger: resolveLogger({
       logger: options.logger,
       adapter: options.loggerAdapter,
-      source: TASKS_LOG_GROUP,
+      source: TASKS_PACKAGE_NAME,
     }),
     state: "idle",
     runnerId: options.runner?.id || taskId(),

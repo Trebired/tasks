@@ -28,6 +28,9 @@
       "#3eil9krdpowm": [
         "../../src/storage/sqlite/completion.ts"
       ],
+      "#44ds7phbcz8i": [
+        "../../src/package-metadata.ts"
+      ],
       "#4bd798a4d972": [
         "../../src/executor/child/process.ts"
       ],

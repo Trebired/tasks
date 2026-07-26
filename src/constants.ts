@@ -1,4 +1,10 @@
-const TASKS_LOG_GROUP = "package.tasks";
+import {
+  buildPackageLogGroup,
+  PACKAGE_NAME,
+} from "./package-metadata.js";
+
+const TASKS_LOG_GROUP = buildPackageLogGroup();
+const TASKS_PACKAGE_NAME = PACKAGE_NAME;
 
 const DEFAULT_TASK_GLOBAL_CONCURRENCY = 4;
 const DEFAULT_TASK_POLL_INTERVAL_MS = 1_000;
@@ -27,5 +33,6 @@ export {
   DEFAULT_TASK_STALE_SCAN_INTERVAL_MS,
   DEFAULT_TASK_STALE_SCAN_LIMIT,
   DEFAULT_TASK_STOP_TIMEOUT_MS,
+  TASKS_PACKAGE_NAME,
   TASKS_LOG_GROUP,
 };
