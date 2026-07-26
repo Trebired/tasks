@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.3
+
+- Removed package test suites and banned committed `*.spec.ts`/`*.spec.tsx` files through Code Discipline.
+- Added Code Discipline enforcement for hardcoded `trebired` strings outside package metadata.
+- Migrated Code Discipline to `.code-discipline/config.ts` with alias-map sync output.
+- Updated package-generated artifact ignores and internal package dependency ranges.
+
 ## 1.1.2
 
 - Moved package-owned task host logging under the `trebired.tasks` group root.

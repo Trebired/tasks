@@ -5,7 +5,7 @@ import type {
   LoggerAdapterLogMethod,
   LoggerAdapterWriter,
   NormalizedLoggerAdapter,
-} from "@trebired/logger-adapter";
+} from "@package/logger-adapter";
 
 export type TaskLogMethod = LoggerAdapterLogMethod;
 export type TaskLogEvent = LoggerAdapterEvent;

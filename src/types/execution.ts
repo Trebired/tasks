@@ -137,7 +137,7 @@ export type TaskExecutorRunRequest = {
   onEvent?: (event: TaskExecutorProgressEvent) => void | Promise<void>;
 };
 
-import type { ResultLike } from "@trebired/result";
+import type { ResultLike } from "@package/result";
 
 export type TaskExecutionHandle = {
   cancel: (reason?: string) => Promise<void>;

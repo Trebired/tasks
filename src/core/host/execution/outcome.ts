@@ -1,11 +1,11 @@
-import { result } from "@trebired/result";
+import { result } from "@package/result";
 import type {
   TaskExecutorOutcome,
   TaskHandlerRegistration,
   TaskRecord,
   TaskTerminalError,
 } from "#2kjvrax0gr4m";
-import { resolveRetryDecision } from "#9cba595a238d";
+import { resolveRetryDecision } from "#78t73r76gox8";
 import { nowIso, toErrorShape } from "#92c6666f713d";
 import { emitTaskHostEvent } from "#yjfcvxwh42t2";
 import type { RunningExecution, TaskHostContext } from "#yjfcvxwh42t2";
@@ -39,8 +39,9 @@ async function handleLostTaskLease(context: TaskHostContext, running: RunningExe
     taskId: running.task.id,
     kind: running.task.kind,
     task: running.task,
-    result: result.conflict("task-lease-lost", "Task lease was lost during execution.", {
+    result: result.conflict("task-lease-lost", {
       details: {
+        message: "Task lease was lost during execution.",
         runnerId: context.runnerId,
         taskId: running.task.id,
       },
@@ -64,8 +65,9 @@ async function failTaskExecution(context: TaskHostContext, task: TaskRecord, err
     kind: task.kind,
     task: failed,
     error,
-    result: result.internal("task-failed", "Task execution failed.", {
+    result: result.internal("task-failed", {
       details: {
+        message: "Task execution failed.",
         runnerId: context.runnerId,
         taskId: task.id,
       },
@@ -147,8 +149,9 @@ async function markTaskCancelled(context: TaskHostContext, running: RunningExecu
     taskId: running.task.id,
     kind: running.task.kind,
     task,
-    result: result.noop("task-cancelled", reason || "Task cancelled.", {
+    result: result.noop("task-cancelled", {
       details: {
+        message: reason || "Task cancelled.",
         runnerId: context.runnerId,
         taskId: running.task.id,
       },
@@ -188,8 +191,9 @@ async function handleTaskFailureOutcome(
     kind: running.task.kind,
     task,
     error,
-    result: result.internal("task-failed", "Task execution failed.", {
+    result: result.internal("task-failed", {
       details: {
+        message: "Task execution failed.",
         runnerId: context.runnerId,
         taskId: running.task.id,
       },
@@ -221,8 +225,9 @@ async function requeueFailedTask(
     kind: running.task.kind,
     task,
     error,
-    result: result.noop("task-retry-scheduled", "Task scheduled for retry.", {
+    result: result.noop("task-retry-scheduled", {
       details: {
+        message: "Task scheduled for retry.",
         runnerId: context.runnerId,
         scheduledAt: nowIso(scheduledAt),
         taskId: running.task.id,

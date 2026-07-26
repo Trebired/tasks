@@ -8,19 +8,10 @@ coverage/
 # Package artifacts
 *.tgz
 
-# Logs and runtime output
-*.log
-logs/
-.runtime/
+# Runtime and generated work files
 .tmp/
 
-# OS and editor noise
-.DS_Store
-Thumbs.db
-*.swp
-*.swo
-
-# Environment files
+# Local environment
 .env
 .env.*
 !.env.example

@@ -1,4 +1,4 @@
-import { resolveLogger } from "@trebired/logger-adapter";
+import { resolveLogger } from "@package/logger-adapter";
 
 import {
   DEFAULT_TASK_GLOBAL_CONCURRENCY,
@@ -10,7 +10,7 @@ import {
   DEFAULT_TASK_STALE_SCAN_LIMIT,
   DEFAULT_TASK_STOP_TIMEOUT_MS,
   TASKS_LOG_GROUP,
-} from "#5dtdwzlie8fm";
+} from "#0bba403f3e43";
 import type {
   TaskExecutionHandle,
   TaskExecutor,

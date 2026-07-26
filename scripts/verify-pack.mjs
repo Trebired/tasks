@@ -8,7 +8,7 @@ const tempRoot = path.join(rootDir, ".tmp", "verify-pack");
 const npmCacheDir = path.join(tempRoot, "npm-cache");
 const packageJsonBackupPath = path.join(rootDir, ".tmp", "package.json.backup");
 const nodeTypesDir = path.join(rootDir, "node_modules", "@types", "node");
-const loggerAdapterDir = path.join(rootDir, "node_modules", "@trebired", "logger-adapter");
+const loggerAdapterDir = path.join(rootDir, "node_modules", "@package", "logger-adapter");
 const tscBin = path.join(rootDir, "node_modules", "typescript", "bin", "tsc");
 
 async function main() {
@@ -166,21 +166,32 @@ async function runConsumerSmokeTest(tarballPath) {
     recursive: true,
   });
 
+  await writeConsumerPackageJson(consumerDir, tarballPath);
+  await writeConsumerSourceFiles(consumerDir);
+  await writeConsumerTsconfig(consumerDir);
+  runConsumerInstall(consumerDir);
+  runConsumerTypecheck(consumerDir);
+  runConsumerRuntime(consumerDir);
+}
+
+async function writeConsumerPackageJson(consumerDir, tarballPath) {
   await fs.writeFile(path.join(consumerDir, "package.json"), JSON.stringify({
     name: "tasks-pack-smoke",
     private: true,
     type: "module",
     dependencies: {
-      "@trebired/logger-adapter": `file:${loggerAdapterDir}`,
-      "@trebired/tasks": `file:${tarballPath}`,
+      "@package/logger-adapter": `file:${loggerAdapterDir}`,
+      "@package/tasks": `file:${tarballPath}`,
     },
     devDependencies: {
       "@types/node": `file:${nodeTypesDir}`,
     },
   }, null, 2));
+}
 
+async function writeConsumerSourceFiles(consumerDir) {
   await fs.writeFile(path.join(consumerDir, "index.ts"), [
-    'import { createTaskHost, taskChannel } from "@trebired/tasks";',
+    'import { createTaskHost, taskChannel } from "@package/tasks";',
     "",
     "const channel = taskChannel.kind(\"demo.kind\");",
     "const host = createTaskHost;",
@@ -189,11 +200,13 @@ async function runConsumerSmokeTest(tarballPath) {
   ].join("\n"));
 
   await fs.writeFile(path.join(consumerDir, "runtime.mjs"), [
-    'import { createTaskHost, taskChannel } from "@trebired/tasks";',
+    'import { createTaskHost, taskChannel } from "@package/tasks";',
     "",
     "console.log(typeof createTaskHost, taskChannel.kind(\"demo.kind\"));",
   ].join("\n"));
+}
 
+async function writeConsumerTsconfig(consumerDir) {
   await fs.writeFile(path.join(consumerDir, "tsconfig.json"), JSON.stringify({
     compilerOptions: {
       lib: [
@@ -211,17 +224,23 @@ async function runConsumerSmokeTest(tarballPath) {
       "./index.ts",
     ],
   }, null, 2));
+}
 
+function runConsumerInstall(consumerDir) {
   execFileSync("npm", ["install", "--ignore-scripts"], {
     ...createNpmOptions(consumerDir),
     stdio: "inherit",
   });
+}
 
+function runConsumerTypecheck(consumerDir) {
   execFileSync(process.execPath, [tscBin, "-p", "tsconfig.json"], {
     cwd: consumerDir,
     stdio: "inherit",
   });
+}
 
+function runConsumerRuntime(consumerDir) {
   execFileSync(process.execPath, ["runtime.mjs"], {
     cwd: consumerDir,
     stdio: "inherit",

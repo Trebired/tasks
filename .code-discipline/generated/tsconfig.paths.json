@@ -1,0 +1,243 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "#0bba403f3e43": [
+        "../../src/constants.ts"
+      ],
+      "#1op41bzcon2b": [
+        "../../src/storage/sqlite/stale.ts"
+      ],
+      "#1quj02prq092": [
+        "../../src/storage/postgres/prepare.ts"
+      ],
+      "#2kjvrax0gr4m": [
+        "../../src/types.ts"
+      ],
+      "#2tizyd9i70zc": [
+        "../../scripts/prepare-dist.mjs"
+      ],
+      "#324vg11cn8jm": [
+        "../../src/types/core.ts"
+      ],
+      "#32g8np5v5jpb": [
+        "../../src/types/integrations.ts"
+      ],
+      "#35k522mcym6s": [
+        "../../examples/sqlite_in_process.ts"
+      ],
+      "#3eil9krdpowm": [
+        "../../src/storage/sqlite/completion.ts"
+      ],
+      "#4bd798a4d972": [
+        "../../src/executor/child/process.ts"
+      ],
+      "#4xg12aru9hri": [
+        "../../src/live/tracker.ts"
+      ],
+      "#4zlveofcxkd3": [
+        "../../src/events/entry.ts"
+      ],
+      "#54ms815v3mol": [
+        "../../src/executor/child/process_worker.ts"
+      ],
+      "#5b0505fd2b8d": [
+        "../../src/storage/postgres.ts"
+      ],
+      "#5kfgvm110fl3": [
+        "../../src/core/host/pump.ts"
+      ],
+      "#657abf96f340": [
+        "../../src/core/snapshot.ts"
+      ],
+      "#6hgrn69s91pw": [
+        "../../src/handler.ts"
+      ],
+      "#6kuftr73uwbj": [
+        "../../src/storage/sqlite.ts"
+      ],
+      "#7323401cd694": [
+        "../../src/live/socket_io.ts"
+      ],
+      "#75srh6ggznxe": [
+        "../../src/storage/sqlite/read.ts"
+      ],
+      "#78t73r76gox8": [
+        "../../src/core/retry.ts"
+      ],
+      "#7lui9w1975hy": [
+        "../../src/storage/create.ts"
+      ],
+      "#87337d1a79d6": [
+        "../../src/backend/utils/time.ts"
+      ],
+      "#8942387ee1fc": [
+        "../../src/core/channels.ts"
+      ],
+      "#8esv3y30elil": [
+        "../../src/backend/utils/normalize.ts"
+      ],
+      "#8lcinqdptinq": [
+        "../../src/storage/sqlite/schema.ts"
+      ],
+      "#8t8bq600b4wu": [
+        "../../src/index.ts"
+      ],
+      "#92c6666f713d": [
+        "../../src/core/utils.ts"
+      ],
+      "#9652e5354aa6": [
+        "../../src/frontend/js/utils/text.ts"
+      ],
+      "#a0iq0qaerho6": [
+        "../../src/executor/in_process.ts"
+      ],
+      "#a9f2fec2aeaf": [
+        "../../src/live/hub.ts"
+      ],
+      "#asml8souabdl": [
+        "../../src/storage/postgres/create_task.ts"
+      ],
+      "#au2yc05uydyb": [
+        "../../src/types/store.ts"
+      ],
+      "#az2db012axb6": [
+        "../../src/core/host/execution/events.ts"
+      ],
+      "#b3d930a4472b": [
+        "../../src/core/lifecycle.ts"
+      ],
+      "#b7dab5b5b35e": [
+        "../../src/core/host.ts"
+      ],
+      "#b84lkgfqhd7u": [
+        "../../examples/live_updates.ts"
+      ],
+      "#biii09owpug7": [
+        "../../src/core/host/execution.ts"
+      ],
+      "#blri5p7r9rdz": [
+        "../../src/storage/postgres/retention.ts"
+      ],
+      "#c573drfw1bna": [
+        "../../src/types/execution.ts"
+      ],
+      "#c8rzqw0hrvb5": [
+        "../../src/storage/sqlite/query.ts"
+      ],
+      "#cc76e7b18894": [
+        "../../src/core/emitter.ts"
+      ],
+      "#crbgm8igwe8k": [
+        "../../src/storage/sqlite/retention.ts"
+      ],
+      "#crp5itx075gf": [
+        "../../src/storage/sqlite/progress.ts"
+      ],
+      "#d66a914eb693": [
+        "../../src/backend/utils/object.ts"
+      ],
+      "#d73laskis6vs": [
+        "../../src/core/host/control.ts"
+      ],
+      "#eg85mujor6zc": [
+        "../../examples/handlers/report_task.ts"
+      ],
+      "#fda93rpnc38d": [
+        "../../src/storage/prepare.ts"
+      ],
+      "#g6h3y0rvrh9n": [
+        "../../src/executor/core/utils.ts"
+      ],
+      "#glwr8hhdwatp": [
+        "../../src/storage/postgres/progress.ts"
+      ],
+      "#gydybjagu7ke": [
+        "../../src/storage/postgres/read.ts"
+      ],
+      "#h92hqm8bmd08": [
+        "../../src/events/adapters.ts"
+      ],
+      "#ha835zo6d5wl": [
+        "../../src/core/host/execution/outcome.ts"
+      ],
+      "#j8uzfjaspgww": [
+        "../../src/storage/postgres/completion.ts"
+      ],
+      "#ksjjcxvzvz26": [
+        "../../src/executor/types.ts"
+      ],
+      "#l2y5agh1cx5y": [
+        "../../src/core/host/query.ts"
+      ],
+      "#mezte5jtu6tm": [
+        "../../scripts/verify-pack.mjs"
+      ],
+      "#nfgdjd5w5wyu": [
+        "../../src/storage/sqlite/create.ts"
+      ],
+      "#o6zvxk2y9eyi": [
+        "../../src/storage/sqlite/prepare.ts"
+      ],
+      "#ob6x1nk2j7vm": [
+        "../../src/storage/postgres/shared.ts"
+      ],
+      "#ol21k2hutjja": [
+        "../../src/storage/postgres/create.ts"
+      ],
+      "#otwuc8yg7odm": [
+        "../../src/storage/sqlite/create_task.ts"
+      ],
+      "#pomfbdrkgf10": [
+        "../../src/executor/core/context.ts"
+      ],
+      "#qvcb2g8s7ali": [
+        "../../src/storage/sqlite/shared.ts"
+      ],
+      "#sf3e7dp3vrpr": [
+        "../../src/core/host/create.ts"
+      ],
+      "#sqsl30t1mk0x": [
+        "../../src/executor/core/module.ts"
+      ],
+      "#syzi929orlyn": [
+        "../../src/core/host/lifecycle.ts"
+      ],
+      "#tig014h1m5ya": [
+        "../../src/storage/postgres/query.ts"
+      ],
+      "#u0u9wbvj9ruq": [
+        "../../src/storage/sqlite/claim.ts"
+      ],
+      "#uahcacqyvf55": [
+        "../../src/types/live.ts"
+      ],
+      "#uxqeannvmov6": [
+        "../../src/storage/postgres/cancel.ts"
+      ],
+      "#v5o08m17gfd8": [
+        "../../src/storage/schema.ts"
+      ],
+      "#v92x6m6hs2ca": [
+        "../../src/storage/sqlite/cancel.ts"
+      ],
+      "#w9meabof3geh": [
+        "../../src/types/logging.ts"
+      ],
+      "#x4nwrc2d1b82": [
+        "../../examples/postgres_child_process.ts"
+      ],
+      "#xz14dle437cx": [
+        "../../src/storage/postgres/schema.ts"
+      ],
+      "#y16wneppxm2s": [
+        "../../src/storage/postgres/stale.ts"
+      ],
+      "#y9hhox9e7r0o": [
+        "../../src/storage/postgres/claim.ts"
+      ],
+      "#yjfcvxwh42t2": [
+        "../../src/core/host/context.ts"
+      ]
+    }
+  }
+}
