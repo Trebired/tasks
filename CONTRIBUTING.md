@@ -44,7 +44,7 @@ There is no package test script. Committed `*.spec.ts` and `*.spec.tsx` files ar
 - Keep the reusable task boundary smaller than the product-specific code around it.
 - Keep task infrastructure generic and host-owned instead of encoding product concepts into the package.
 - Keep durable state, leasing, retries, and recovery explicit and easy to inspect.
-- Keep the executor boundary runtime-agnostic so Bun and Node hosts are both first-class.
+- Keep the executor boundary explicit for Bun hosts.
 - Prefer module-backed handlers over hidden globals or process-local magic.
 - Avoid runtime dependencies unless they remove meaningful complexity.
 
@@ -55,7 +55,7 @@ There is no package test script. Committed `*.spec.ts` and `*.spec.tsx` files ar
 3. Publish with:
 
    ```sh
-   npm publish
+   bun publish
    ```
 
-`npm publish` runs `prepublishOnly`, which typechecks and runs the package publish verification path.
+`bun publish` runs `prepublishOnly`, which typechecks and runs the package publish verification path.

@@ -10,7 +10,7 @@ coverage/
 
 # Runtime and generated work files
 .tmp/
-
+cd-report-*.txt
 # Local environment
 .env
 .env.*

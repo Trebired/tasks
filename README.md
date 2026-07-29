@@ -1,6 +1,6 @@
 # @trebired/tasks
 
-Durable background task host for Bun and Node.js applications, with built-in progress state, step replay, live subscription bootstrap, stale detection, pluggable execution backends, and built-in durable Postgres and SQLite stores.
+Durable background task host for Bun applications, with built-in progress state, step replay, live subscription bootstrap, stale detection, pluggable execution backends, and built-in durable Postgres and SQLite stores.
 
 `@trebired/tasks` is the generic Trebired package for hosts that need real background work outside the request path without rebuilding the whole task observability layer around it later.
 
@@ -30,16 +30,16 @@ In plain terms:
 
 ## Install
 
-Runtime support: Bun 1+ and Node.js 18+.
+Runtime support: Bun 1+.
 
 ```sh
-npm install @trebired/tasks
+bun i @trebired/tasks
 ```
 
 For the Postgres driver:
 
 ```sh
-npm install pg
+bun add pg
 ```
 
 ## Quick Start
@@ -782,15 +782,15 @@ The default still remains `createChildProcessTaskExecutor()`.
 
 Why child process first:
 
-- it works cleanly across Bun and Node hosts
-- it keeps the package boundary runtime-agnostic
+- it works cleanly across Bun hosts
+- it keeps the package boundary explicit
 - it isolates heavy work and crashes better than in-process execution
-- it avoids making Node-specific worker-thread behavior the default mental model
+- it avoids making worker-thread behavior the default mental model
 
 Why Piscina is still only a future optional adapter:
 
-- Piscina is useful for Node-specific worker-thread workloads
-- Bun and Node do not share the same worker-thread assumptions
+- Piscina is useful for worker-thread workloads
+- worker-thread assumptions should stay outside the core package
 - making Piscina the core would leak a runtime-specific execution choice into the package's main API
 
 In other words, child process is the conservative generic default. Piscina can fit later as an adapter without redefining the package.
@@ -934,15 +934,15 @@ Important exported types include:
 
 Durable Postgres + child-process execution:
 
-- [examples/postgres_child_process.ts](/home/mirmachynka/projects/serious/npm/tasks/examples/postgres_child_process.ts)
+- [examples/postgres_child_process.ts](/home/mirmachynka/projects/tech/major/npm/tasks/examples/postgres_child_process.ts)
 
 Durable SQLite + in-process execution:
 
-- [examples/sqlite_in_process.ts](/home/mirmachynka/projects/serious/npm/tasks/examples/sqlite_in_process.ts)
+- [examples/sqlite_in_process.ts](/home/mirmachynka/projects/tech/major/npm/tasks/examples/sqlite_in_process.ts)
 
 Live bootstrap + tracker flow:
 
-- [examples/live_updates.ts](/home/mirmachynka/projects/serious/npm/tasks/examples/live_updates.ts)
+- [examples/live_updates.ts](/home/mirmachynka/projects/tech/major/npm/tasks/examples/live_updates.ts)
 
 ## Notes And Limitations
 
@@ -950,5 +950,5 @@ Live bootstrap + tracker flow:
 - The default executor is child-process based. Worker-thread and Piscina adapters can be added later behind the same `TaskExecutor` contract.
 - The Socket.IO bridge is intentionally thin and optional. The core live contract remains transport-agnostic.
 - Node child-process handlers should usually point at runnable JavaScript modules unless the host already provides a loader for TypeScript modules. Bun can run `.ts` task entrypoints directly.
-- The SQLite driver uses Bun's builtin SQLite support when available, falls back to Node's `node:sqlite` when available, and otherwise uses `better-sqlite3`.
+- The SQLite driver uses Bun's builtin SQLite support when available, falls back to `better-sqlite3` when Bun's builtin SQLite support is not available.
 - The retention helpers are generic package-owned policies, not a replacement for app-specific archival decisions.
