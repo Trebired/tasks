@@ -36,12 +36,6 @@ Runtime support: Bun 1+.
 bun i @trebired/tasks
 ```
 
-For the Postgres driver:
-
-```sh
-bun add pg
-```
-
 ## Quick Start
 
 Define a task handler in a normal module:
@@ -146,7 +140,9 @@ const snapshot = await tasks.readSnapshot(queued.task.id, {
 console.log(snapshot?.state, snapshot?.progress.percent, snapshot?.steps?.length);
 ```
 
-## Lifecycle And Ownership Model
+## Concepts
+
+### Lifecycle And Ownership Model
 
 The host still owns:
 
@@ -168,7 +164,7 @@ The package owns:
 
 That split is deliberate. Apps should not need to rebuild generic task observability every time they add progress panels or live dashboards.
 
-## Task Model
+### Task Model
 
 The persisted task record still has the core durable states:
 
@@ -194,7 +190,7 @@ On top of that, the package now exposes a first-class lifecycle/progress state m
 
 That means a host can build UI against `snapshot.state` instead of reverse-engineering retry and stale semantics from multiple raw fields.
 
-## Progress Model
+### Progress Model
 
 Every snapshot includes a normalized progress contract:
 
@@ -235,7 +231,7 @@ The engine owns the lifecycle-facing parts such as:
 - `staleAt`
 - `lastHeartbeatAt`
 
-## Steps Model
+### Steps Model
 
 Task steps are first-class persisted records, not just an app convention:
 
@@ -266,7 +262,7 @@ await context.appendStep({
 
 These steps are normalized the same way whether they came from a child-process executor, a future custom executor, or host-owned testing infrastructure.
 
-## Snapshots, Replay, And Aggregate Reads
+### Snapshots, Replay, And Aggregate Reads
 
 The host now exposes package-owned read APIs for UI and dashboard usage:
 
@@ -295,7 +291,7 @@ const bootstrap = await tasks.bootstrap({
 console.log(bootstrap.snapshots.length, bootstrap.aggregate?.byState.running);
 ```
 
-## Channel And Scope Model
+### Channel And Scope Model
 
 `@trebired/tasks` now has a package-owned channel model for grouping tasks and subscriptions.
 
@@ -338,7 +334,7 @@ const bootstrap = await tasks.bootstrap({
 });
 ```
 
-## Live Subscription Model
+### Live Subscription Model
 
 The package now ships a generic live hub for real-time UI flows:
 
@@ -380,7 +376,7 @@ type TaskLiveMessage =
     };
 ```
 
-## Normalized Lifecycle Events
+### Normalized Lifecycle Events
 
 Apps no longer need to translate low-level host events into UI-friendly lifecycle updates.
 
@@ -405,7 +401,7 @@ Lifecycle event names:
 
 Each normalized event carries the current snapshot when one exists, plus the step record for step events.
 
-## Generic Event Entries And Adapters
+### Generic Event Entries And Adapters
 
 When a consumer wants timeline rows, log entries, websocket payloads, or diagnostics records, the package now exposes presentation-friendly event entry helpers too:
 
@@ -452,7 +448,7 @@ tasks.onLifecycleEvent(createTaskLifecycleEventAdapter((entry) => {
 
 This keeps event parsing package-owned while still letting each host choose its own logging, websocket, notification, or storage layer.
 
-## Bootstrap Plus Replay Flow
+### Bootstrap Plus Replay Flow
 
 The preferred real-time flow is:
 
@@ -481,7 +477,7 @@ const unsubscribe = await hub.subscribe({
 
 That bootstrap-first model is package-owned specifically so apps do not need to invent one-off "give me current state, then also subscribe" protocols every time.
 
-## Tiny Client Helper
+### Tiny Client Helper
 
 For framework-agnostic client-side state, use:
 
@@ -508,7 +504,7 @@ The tracker owns:
 
 It stays intentionally small. It does not assume React, Vue, Svelte, or a browser runtime.
 
-## Optional Socket.IO Bridge
+### Optional Socket.IO Bridge
 
 The core live model does not hardcode Socket.IO.
 
@@ -531,7 +527,7 @@ attachTaskLiveSocketBridge(io, {
 
 The bridge expects a Socket.IO-like shape through duck typing. The package does not require a direct runtime dependency on `socket.io`.
 
-## Dedupe And Supersedence
+### Dedupe And Supersedence
 
 Deduplication is now surfaced explicitly through the enqueue result:
 
@@ -562,7 +558,7 @@ console.log(result.supersededTaskIds);
 
 This is useful for "already in progress" and "newer request replaced older request" UX without each app inventing its own semantics.
 
-## Stale And Watchdog Behavior
+### Stale And Watchdog Behavior
 
 The package now owns stale/watchdog mechanics too.
 
@@ -593,7 +589,7 @@ In practice this lets UIs show:
 
 without app-owned timeout heuristics.
 
-## Persistence Policy Helpers
+### Persistence Policy Helpers
 
 The store now exposes a package-owned retention interface:
 
@@ -628,7 +624,7 @@ This covers generic retention concerns such as:
 - TTL-based cleanup
 - keeping only recent successes or failures per kind
 
-## Storage Adapter Model
+### Storage Adapter Model
 
 The core engine depends on a `TaskStore` contract, but the public happy path is now backend-agnostic.
 
@@ -745,7 +741,7 @@ The Postgres adapter targets `pg`-style pools with:
 
 That keeps claim and lease behavior transaction-owned instead of pretending a stateless query function is enough for a durable task engine.
 
-## Executor Model
+### Executor Model
 
 The core engine still does not assume worker threads.
 
@@ -801,7 +797,94 @@ Why in-process is still not the default:
 - heavy synchronous work can still block the host event loop
 - process isolation is still the safer default for generic package-owned execution
 
-## Core API
+### Progress Bar Example
+
+For a progress bar, the snapshot model is enough:
+
+```ts
+const snapshot = await tasks.readSnapshot(taskId);
+
+const percent = snapshot?.progress.percent ?? 0;
+const label = snapshot?.progress.label || snapshot?.state || "queued";
+```
+
+With live updates:
+
+```ts
+await hub.subscribe({
+  taskIds: [taskId],
+}, (message) => {
+  tracker.apply(message);
+  const current = tracker.getState().snapshots[0];
+  renderProgressBar(current?.progress.percent || 0, current?.progress.label || current?.state || "queued");
+});
+```
+
+### Live Modal Or Task Panel Example
+
+For a current-task panel, the usual flow is:
+
+```ts
+await hub.subscribe({
+  channels: [
+    taskChannel.scope("workspace:42"),
+  ],
+  recentSteps: 100,
+}, (message) => {
+  tracker.apply(message);
+  const state = tracker.getState();
+  renderTaskPanel({
+    tasks: state.snapshots,
+    steps: state.steps,
+    aggregate: state.aggregate,
+  });
+});
+```
+
+That gives the panel:
+
+- current task states
+- ordered recent steps per task
+- aggregate counts for summary badges
+
+without app-owned event reconstruction.
+
+## Runtime
+
+### Install Notes
+
+For the Postgres driver:
+
+```sh
+bun add pg
+```
+
+### Examples
+
+Durable Postgres + child-process execution:
+
+- [examples/postgres_child_process.ts](/home/mirmachynka/projects/tech/major/npm/tasks/examples/postgres_child_process.ts)
+
+Durable SQLite + in-process execution:
+
+- [examples/sqlite_in_process.ts](/home/mirmachynka/projects/tech/major/npm/tasks/examples/sqlite_in_process.ts)
+
+Live bootstrap + tracker flow:
+
+- [examples/live_updates.ts](/home/mirmachynka/projects/tech/major/npm/tasks/examples/live_updates.ts)
+
+### Notes And Limitations
+
+- The generic public store factory currently ships with Postgres and SQLite drivers.
+- The default executor is child-process based. Worker-thread and Piscina adapters can be added later behind the same `TaskExecutor` contract.
+- The Socket.IO bridge is intentionally thin and optional. The core live contract remains transport-agnostic.
+- Node child-process handlers should usually point at runnable JavaScript modules unless the host already provides a loader for TypeScript modules. Bun can run `.ts` task entrypoints directly.
+- The SQLite driver uses Bun's builtin SQLite support when available, falls back to `better-sqlite3` when Bun's builtin SQLite support is not available.
+- The retention helpers are generic package-owned policies, not a replacement for app-specific archival decisions.
+
+## Public API
+
+### Core API
 
 Main host entrypoint:
 
@@ -833,59 +916,7 @@ Main methods:
 - `tasks.onLifecycleEvent(listener)`
 - `tasks.getState()`
 
-## Progress Bar Example
-
-For a progress bar, the snapshot model is enough:
-
-```ts
-const snapshot = await tasks.readSnapshot(taskId);
-
-const percent = snapshot?.progress.percent ?? 0;
-const label = snapshot?.progress.label || snapshot?.state || "queued";
-```
-
-With live updates:
-
-```ts
-await hub.subscribe({
-  taskIds: [taskId],
-}, (message) => {
-  tracker.apply(message);
-  const current = tracker.getState().snapshots[0];
-  renderProgressBar(current?.progress.percent || 0, current?.progress.label || current?.state || "queued");
-});
-```
-
-## Live Modal Or Task Panel Example
-
-For a current-task panel, the usual flow is:
-
-```ts
-await hub.subscribe({
-  channels: [
-    taskChannel.scope("workspace:42"),
-  ],
-  recentSteps: 100,
-}, (message) => {
-  tracker.apply(message);
-  const state = tracker.getState();
-  renderTaskPanel({
-    tasks: state.snapshots,
-    steps: state.steps,
-    aggregate: state.aggregate,
-  });
-});
-```
-
-That gives the panel:
-
-- current task states
-- ordered recent steps per task
-- aggregate counts for summary badges
-
-without app-owned event reconstruction.
-
-## Current API
+### Current API
 
 The first public slice is still deliberate rather than huge:
 
@@ -930,25 +961,14 @@ Important exported types include:
 - `TaskExecutor`
 - `TaskRetentionPolicy`
 
-## Examples
+## What It Does Not Do
 
-Durable Postgres + child-process execution:
+This package does not:
 
-- [examples/postgres_child_process.ts](/home/mirmachynka/projects/tech/major/npm/tasks/examples/postgres_child_process.ts)
+- own product task names or UI
+- choose a queue deployment topology
+- hide storage or executor policy from callers
 
-Durable SQLite + in-process execution:
+## License
 
-- [examples/sqlite_in_process.ts](/home/mirmachynka/projects/tech/major/npm/tasks/examples/sqlite_in_process.ts)
-
-Live bootstrap + tracker flow:
-
-- [examples/live_updates.ts](/home/mirmachynka/projects/tech/major/npm/tasks/examples/live_updates.ts)
-
-## Notes And Limitations
-
-- The generic public store factory currently ships with Postgres and SQLite drivers.
-- The default executor is child-process based. Worker-thread and Piscina adapters can be added later behind the same `TaskExecutor` contract.
-- The Socket.IO bridge is intentionally thin and optional. The core live contract remains transport-agnostic.
-- Node child-process handlers should usually point at runnable JavaScript modules unless the host already provides a loader for TypeScript modules. Bun can run `.ts` task entrypoints directly.
-- The SQLite driver uses Bun's builtin SQLite support when available, falls back to `better-sqlite3` when Bun's builtin SQLite support is not available.
-- The retention helpers are generic package-owned policies, not a replacement for app-specific archival decisions.
+Licensed under MIT. See [LICENSE](./LICENSE).
