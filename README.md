@@ -968,7 +968,3 @@ This package does not:
 - own product task names or UI
 - choose a queue deployment topology
 - hide storage or executor policy from callers
-
-## License
-
-Licensed under MIT. See [LICENSE](./LICENSE).
