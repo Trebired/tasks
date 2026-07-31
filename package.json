@@ -30,12 +30,13 @@
     "README.md"
   ],
   "scripts": {
-    "build": "rm -rf dist && tsc -p tsconfig.build.json && bun ./scripts/prepare-dist.mjs prepare-dist",
+    "build": "bun run prepare:generated && rm -rf dist && tsc -p tsconfig.build.json && bun ./scripts/prepare-dist.mjs prepare-dist",
     "demo": "bun run examples/postgres_child_process.ts",
     "postpack": "bun ./scripts/prepare-dist.mjs postpack",
     "prepack": "bun run build && bun ./scripts/prepare-dist.mjs prepack",
     "prepublishOnly": "bun run typecheck && bun run verify:pack",
-    "typecheck": "tsc --noEmit",
+    "prepare:generated": "bun ./scripts/build/generated/tsconfig.mjs",
+    "typecheck": "bun run prepare:generated && tsc --noEmit",
     "verify:pack": "bun ./scripts/verify-pack.mjs"
   },
   "dependencies": {
