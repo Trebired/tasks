@@ -1,8 +1,4 @@
-import type {
-  TaskHost,
-  TaskHostOptions,
-  TaskRecord,
-} from "#2kjvrax0gr4m";
+import { TaskHost, TaskHostOptions } from "#2kjvrax0gr4m";
 import { cancelTask, enqueueTask } from "./control.js";
 import {
   createTaskHostContext,

@@ -1,11 +1,4 @@
-import type {
-  TaskEventEntry,
-  TaskHostEvent,
-  TaskLifecycleEvent,
-  TaskLifecycleEventName,
-  TaskLifecycleState,
-  TaskStepLevel,
-} from "#2kjvrax0gr4m";
+import { TaskEventEntry, TaskHostEvent, TaskLifecycleEvent, TaskLifecycleEventName, TaskStepLevel } from "#2kjvrax0gr4m";
 import { toRecord } from "#92c6666f713d";
 import { normalizeTaskHostEvent } from "#b3d930a4472b";
 

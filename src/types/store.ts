@@ -1,16 +1,4 @@
-import type {
-  TaskAggregateSnapshot,
-  TaskListQuery,
-  TaskRecord,
-  TaskRetentionPolicy,
-  TaskRetentionResult,
-  TaskStatus,
-  TaskStepKind,
-  TaskStepLevel,
-  TaskStepListQuery,
-  TaskStepRecord,
-  TaskTerminalError,
-} from "./core.js";
+import { TaskAggregateSnapshot, TaskListQuery, TaskRecord, TaskRetentionPolicy, TaskRetentionResult, TaskStepKind, TaskStepLevel, TaskStepListQuery, TaskStepRecord, TaskTerminalError } from "./core.js";
 
 export type TaskCreateInput<TInput = unknown> = {
   id: string;

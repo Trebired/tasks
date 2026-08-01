@@ -12,16 +12,7 @@ import type {
   TaskStepListQuery,
   TaskStepRecord,
 } from "./core.js";
-import type {
-  TaskEnqueueOptions,
-  TaskEnqueueResult,
-  TaskExecutionHandle,
-  TaskExecutor,
-  TaskHandlerRegistration,
-  TaskHostEventListener,
-  TaskLifecycleEvent,
-  TaskLifecycleEventListener,
-} from "./execution.js";
+import { TaskEnqueueOptions, TaskEnqueueResult, TaskExecutor, TaskHandlerRegistration, TaskHostEventListener, TaskLifecycleEvent, TaskLifecycleEventListener } from "./execution.js";
 import type { TaskStore } from "./store.js";
 import type { TaskLogger, TaskLoggerAdapter } from "./logging.js";
 
