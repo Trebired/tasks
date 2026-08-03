@@ -4,6 +4,11 @@ All notable changes to `@trebired/tasks` will be documented here.
 
 This project follows semantic versioning once published.
 
+## 1.1.8
+
+- Moved Code Discipline config, alias-map state, generated tsconfig paths, and reports to `.trebired/code-discipline/`.
+- Updated the `@trebired/code-discipline` devDependency to `^4.10.0`.
+
 ## 1.1.7
 
 - Updated Code Discipline configuration to the `imports` rule with dead import removal enabled.

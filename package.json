@@ -1,6 +1,6 @@
 {
   "name": "@trebired/tasks",
-  "version": "1.1.7",
+  "version": "1.1.8",
   "description": "Durable background task host for Bun with persisted task records, Postgres and SQLite storage, progress, retries, dedupe, recovery, and pluggable executors.",
   "type": "module",
   "private": false,
@@ -45,7 +45,7 @@
     "better-sqlite3": "^12.11.1"
   },
   "devDependencies": {
-    "@trebired/code-discipline": "^4.9.2",
+    "@trebired/code-discipline": "^4.10.0",
     "@types/bun": "^1.3.4",
     "@types/node": "^24.10.1",
     "pg": "^8.16.3",
