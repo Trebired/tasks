@@ -1,4 +1,4 @@
-class TaskEventEmitter<TListener extends (value: any) => void | Promise<void>> {
+class TaskEventEmitter<TListener extends(value:any)=>void|Promise<void>> {
   #listeners = new Set<TListener>();
 
   add(listener: TListener): () => void {
@@ -13,7 +13,6 @@ class TaskEventEmitter<TListener extends (value: any) => void | Promise<void>> {
       try {
         void listener(event);
       } catch {
-        // Listener failures must not stop task processing.
       }
     }
   }

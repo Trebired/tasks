@@ -12,14 +12,14 @@ function sortSnapshots(snapshots: TaskSnapshot[]): TaskSnapshot[] {
 }
 
 function createTaskLiveTracker(): TaskLiveTracker {
-  const emitter = new TaskEventEmitter<(state: TaskLiveTrackerState) => void>();
+  const emitter = new TaskEventEmitter<(state:TaskLiveTrackerState)=>void>();
   let state = createInitialTrackerState();
 
   return {
     apply(message: TaskLiveMessage): TaskLiveTrackerState {
       state = message.type === "bootstrap"
-        ? applyBootstrapMessage(message)
-        : applyLiveEventMessage(state, message);
+      ? applyBootstrapMessage(message)
+      : applyLiveEventMessage(state, message);
       emitter.emit(state);
       return state;
     },
@@ -42,8 +42,8 @@ function createInitialTrackerState(): TaskLiveTrackerState {
 }
 
 function applyBootstrapMessage(message: Extract<TaskLiveMessage, {
-  type: "bootstrap";
-}>): TaskLiveTrackerState {
+    type: "bootstrap";
+  }>): TaskLiveTrackerState {
   return {
     snapshots: sortSnapshots(message.snapshots),
     steps: message.steps,

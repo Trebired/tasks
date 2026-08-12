@@ -9,7 +9,7 @@ import {
 
 function createSqliteOptions(path: string) {
   return {
-    driver: "sqlite" as const,
+    driver: "sqlite"as const,
     sqlite: {
       path,
     },
@@ -18,19 +18,19 @@ function createSqliteOptions(path: string) {
 
 function createSqliteTaskHost(path: string) {
   return createTaskHost({
-    store: createTaskStore(createSqliteOptions(path)),
-    executor: createInProcessTaskExecutor(),
-    handlers: [
-      {
-        kind: "report.generate",
-        entrypoint: {
-          module: new URL("./handlers/report_task.ts", import.meta.url),
+      store: createTaskStore(createSqliteOptions(path)),
+      executor: createInProcessTaskExecutor(),
+      handlers: [
+        {
+          kind: "report.generate",
+          entrypoint: {
+            module: new URL("./handlers/report_task.ts", import.meta.url),
+          },
         },
+      ],
+      runner: {
+        globalConcurrency: 1,
       },
-    ],
-    runner: {
-      globalConcurrency: 1,
-    },
   });
 }
 
@@ -38,7 +38,7 @@ async function waitForSnapshot(tasks: ReturnType<typeof createTaskHost>, taskId:
   const deadline = Date.now() + 15_000;
   while (Date.now() < deadline) {
     const snapshot = await tasks.readSnapshot(taskId, {
-      includeSteps: 20,
+        includeSteps: 20,
     });
 
     if (!snapshot) {
@@ -62,7 +62,7 @@ async function main() {
   try {
     await tasks.start();
     const queued = await tasks.enqueue("report.generate", {
-      reportId: "rpt_sqlite_demo",
+        reportId: "rpt_sqlite_demo",
     });
     console.log("queued", queued.task.id);
     await waitForSnapshot(tasks, queued.task.id);

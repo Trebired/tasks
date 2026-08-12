@@ -21,24 +21,24 @@ import {
   readSqliteChanges,
 } from "./shared.js";
 
-async function markTaskRunning<TInput = unknown, TResult = unknown>(
+async function markTaskRunning<TInput=unknown, TResult=unknown>(
   context: SqliteTaskStoreContext,
   input: TaskLeaseInput,
-): Promise<TaskRecord<TInput, TResult> | null> {
+): Promise<TaskRecord<TInput, TResult>|null> {
   const updated = executeRun(
     context.db,
     `
-      update "${context.names.tasksTable}"
-      set
-        status = 'running',
-        started_at = coalesce(started_at, ?),
-        updated_at = ?,
-        stale_at = null,
-        stale_reason = null
-      where id = ?
-        and lease_owner = ?
-        and lease_token = ?
-        and status in ('claimed', 'running')
+    update "${context.names.tasksTable}"
+    set
+    status = 'running',
+    started_at = coalesce(started_at, ?),
+    updated_at = ?,
+    stale_at = null,
+    stale_reason = null
+    where id = ?
+    and lease_owner = ?
+    and lease_token = ?
+    and status in ('claimed', 'running')
     `,
     [nowIso(), nowIso(), input.taskId, input.runnerId, input.leaseToken],
   );
@@ -53,29 +53,29 @@ async function markTaskRunning<TInput = unknown, TResult = unknown>(
     [input.taskId],
   );
 
-  return (row ? mapSqliteTaskRow(row) : null) as TaskRecord<TInput, TResult> | null;
+  return (row ? mapSqliteTaskRow(row) : null) as TaskRecord<TInput, TResult>|null;
 }
 
-async function renewTaskLease<TInput = unknown, TResult = unknown>(
+async function renewTaskLease<TInput=unknown, TResult=unknown>(
   context: SqliteTaskStoreContext,
   input: TaskLeaseRenewalInput,
-): Promise<TaskRecord<TInput, TResult> | null> {
+): Promise<TaskRecord<TInput, TResult>|null> {
   const current = nowIso(input.now);
 
   const updated = executeRun(
     context.db,
     `
-      update "${context.names.tasksTable}"
-      set
-        lease_expires_at = ?,
-        last_heartbeat_at = ?,
-        updated_at = ?,
-        stale_at = null,
-        stale_reason = null
-      where id = ?
-        and lease_owner = ?
-        and lease_token = ?
-        and status in ('claimed', 'running')
+    update "${context.names.tasksTable}"
+    set
+    lease_expires_at = ?,
+    last_heartbeat_at = ?,
+    updated_at = ?,
+    stale_at = null,
+    stale_reason = null
+    where id = ?
+    and lease_owner = ?
+    and lease_token = ?
+    and status in ('claimed', 'running')
     `,
     [
       nowIso(Date.parse(current) + input.leaseMs),
@@ -97,13 +97,13 @@ async function renewTaskLease<TInput = unknown, TResult = unknown>(
     [input.taskId],
   );
 
-  return (row ? mapSqliteTaskRow(row) : null) as TaskRecord<TInput, TResult> | null;
+  return (row ? mapSqliteTaskRow(row) : null) as TaskRecord<TInput, TResult>|null;
 }
 
 async function appendTaskStep(
   context: SqliteTaskStoreContext,
   input: TaskAppendStepInput,
-): Promise<TaskStepRecord | null> {
+): Promise<TaskStepRecord|null> {
   if (!canAppendTaskStep(context, input)) {
     return null;
   }
@@ -111,17 +111,17 @@ async function appendTaskStep(
   const inserted = executeRun(
     context.db,
     `
-      insert into "${context.names.stepsTable}" (
-        task_id,
-        attempt,
-        kind,
-        level,
-        message,
-        meta,
-        percent,
-        created_at
-      )
-      values (?, ?, ?, ?, ?, ?, ?, ?)
+    insert into "${context.names.stepsTable}" (
+    task_id,
+    attempt,
+    kind,
+    level,
+    message,
+    meta,
+    percent,
+    created_at
+    )
+    values (?, ?, ?, ?, ?, ?, ?, ?)
     `,
     [
       ...createStepInsertValues(input),
@@ -135,11 +135,11 @@ async function appendTaskStep(
   const row = executeGet<SqliteTaskStepRow>(
     context.db,
     `
-      select *
-      from "${context.names.stepsTable}"
-      where task_id = ?
-      order by id desc
-      limit 1
+    select *
+    from "${context.names.stepsTable}"
+    where task_id = ?
+    order by id desc
+    limit 1
     `,
     [input.taskId],
   );
@@ -149,16 +149,16 @@ async function appendTaskStep(
 
 function canAppendTaskStep(context: SqliteTaskStoreContext, input: TaskAppendStepInput): boolean {
   return Boolean(executeGet<SqliteTaskRow>(
-    context.db,
-    `
+      context.db,
+      `
       select *
       from "${context.names.tasksTable}"
       where id = ?
-        and lease_owner = ?
-        and lease_token = ?
+      and lease_owner = ?
+      and lease_token = ?
       limit 1
-    `,
-    [input.taskId, input.runnerId, input.leaseToken],
+      `,
+      [input.taskId, input.runnerId, input.leaseToken],
   ));
 }
 
@@ -175,27 +175,27 @@ function createStepInsertValues(input: TaskAppendStepInput): unknown[] {
   ];
 }
 
-async function updateTaskProgress<TInput = unknown, TResult = unknown>(
+async function updateTaskProgress<TInput=unknown, TResult=unknown>(
   context: SqliteTaskStoreContext,
   input: TaskUpdateProgressInput,
-): Promise<TaskRecord<TInput, TResult> | null> {
+): Promise<TaskRecord<TInput, TResult>|null> {
   const current = nowIso(input.updatedAt);
 
   const updated = executeRun(
     context.db,
     `
-      update "${context.names.tasksTable}"
-      set
-        progress_percent = coalesce(?, progress_percent),
-        progress_label = case when ? is null then progress_label else ? end,
-        progress_meta = case when ? is null then progress_meta else ? end,
-        updated_at = ?,
-        stale_at = null,
-        stale_reason = null
-      where id = ?
-        and lease_owner = ?
-        and lease_token = ?
-        and status in ('claimed', 'running')
+    update "${context.names.tasksTable}"
+    set
+    progress_percent = coalesce(?, progress_percent),
+    progress_label = case when ? is null then progress_label else ? end,
+    progress_meta = case when ? is null then progress_meta else ? end,
+    updated_at = ?,
+    stale_at = null,
+    stale_reason = null
+    where id = ?
+    and lease_owner = ?
+    and lease_token = ?
+    and status in ('claimed', 'running')
     `,
     [
       clampPercent(input.percent),
@@ -220,36 +220,36 @@ async function updateTaskProgress<TInput = unknown, TResult = unknown>(
     [input.taskId],
   );
 
-  return (row ? mapSqliteTaskRow(row) : null) as TaskRecord<TInput, TResult> | null;
+  return (row ? mapSqliteTaskRow(row) : null) as TaskRecord<TInput, TResult>|null;
 }
 
-async function markTaskSucceeded<TInput = unknown, TResult = unknown>(
+async function markTaskSucceeded<TInput=unknown, TResult=unknown>(
   context: SqliteTaskStoreContext,
   input: TaskSuccessInput<TResult>,
-): Promise<TaskRecord<TInput, TResult> | null> {
+): Promise<TaskRecord<TInput, TResult>|null> {
   const current = nowIso(input.finishedAt);
 
   const updated = executeRun(
     context.db,
     `
-      update "${context.names.tasksTable}"
-      set
-        status = 'succeeded',
-        output = ?,
-        error = null,
-        progress_percent = 100,
-        finished_at = ?,
-        updated_at = ?,
-        lease_owner = null,
-        lease_token = null,
-        lease_expires_at = null,
-        retry_scheduled_at = null,
-        stale_at = null,
-        stale_reason = null
-      where id = ?
-        and lease_owner = ?
-        and lease_token = ?
-        and status in ('claimed', 'running')
+    update "${context.names.tasksTable}"
+    set
+    status = 'succeeded',
+    output = ?,
+    error = null,
+    progress_percent = 100,
+    finished_at = ?,
+    updated_at = ?,
+    lease_owner = null,
+    lease_token = null,
+    lease_expires_at = null,
+    retry_scheduled_at = null,
+    stale_at = null,
+    stale_reason = null
+    where id = ?
+    and lease_owner = ?
+    and lease_token = ?
+    and status in ('claimed', 'running')
     `,
     [
       JSON.stringify(input.output ?? null),
@@ -271,7 +271,7 @@ async function markTaskSucceeded<TInput = unknown, TResult = unknown>(
     [input.taskId],
   );
 
-  return (row ? mapSqliteTaskRow(row) : null) as TaskRecord<TInput, TResult> | null;
+  return (row ? mapSqliteTaskRow(row) : null) as TaskRecord<TInput, TResult>|null;
 }
 
 export {

@@ -15,21 +15,21 @@ import {
 
 async function createTask(context: SqliteTaskStoreContext, input: TaskCreateInput): Promise<TaskCreateResult> {
   return withSqliteTransaction(context.db, () => {
-    const existing = findExistingTask(context, input);
-    if (existing) {
-      return existing;
-    }
+      const existing = findExistingTask(context, input);
+      if (existing) {
+        return existing;
+      }
 
-    const supersededTaskIds = supersedeTasks(context, input);
-    const task = insertTask(context, input);
+      const supersededTaskIds = supersedeTasks(context, input);
+      const task = insertTask(context, input);
 
-    return {
-      task,
-      deduplicated: false,
-      disposition: supersededTaskIds.length ? "superseded" : "created",
-      reusedTaskId: null,
-      supersededTaskIds,
-    };
+      return {
+        task,
+        deduplicated: false,
+        disposition: supersededTaskIds.length ? "superseded" : "created",
+        reusedTaskId: null,
+        supersededTaskIds,
+      };
   });
 }
 
@@ -41,13 +41,13 @@ function findExistingTask(context: SqliteTaskStoreContext, input: TaskCreateInpu
   const row = executeGet<SqliteTaskRow>(
     context.db,
     `
-      select *
-      from "${context.names.tasksTable}"
-      where kind = ?
-        and dedupe_key = ?
-        and status in ('queued', 'claimed', 'running')
-      order by created_at desc
-      limit 1
+    select *
+    from "${context.names.tasksTable}"
+    where kind = ?
+    and dedupe_key = ?
+    and status in ('queued', 'claimed', 'running')
+    order by created_at desc
+    limit 1
     `,
     [input.kind, input.dedupeKey],
   );
@@ -70,28 +70,28 @@ function supersedeTasks(context: SqliteTaskStoreContext, input: TaskCreateInput)
     return [];
   }
 
-  const rows = executeAll<{ id: string }>(
+  const rows = executeAll<{id:string}>(
     context.db,
     `
-      update "${context.names.tasksTable}"
-      set
-        status = 'cancelled',
-        error = ?,
-        cancel_requested_at = ?,
-        finished_at = ?,
-        updated_at = ?,
-        lease_owner = null,
-        lease_token = null,
-        lease_expires_at = null
-      where kind = ?
-        and supersede_key = ?
-        and status in ('queued', 'claimed', 'running')
-      returning id
+    update "${context.names.tasksTable}"
+    set
+    status = 'cancelled',
+    error = ?,
+    cancel_requested_at = ?,
+    finished_at = ?,
+    updated_at = ?,
+    lease_owner = null,
+    lease_token = null,
+    lease_expires_at = null
+    where kind = ?
+    and supersede_key = ?
+    and status in ('queued', 'claimed', 'running')
+    returning id
     `,
     [
       JSON.stringify(toErrorShape({
-        message: "Task superseded by a newer task",
-        code: "TASK_SUPERSEDED",
+            message: "Task superseded by a newer task",
+            code: "TASK_SUPERSEDED",
       })),
       nowIso(),
       nowIso(),
@@ -111,23 +111,23 @@ function insertTask(context: SqliteTaskStoreContext, input: TaskCreateInput) {
   executeRun(
     context.db,
     `
-      insert into "${context.names.tasksTable}" (
-        id,
-        kind,
-        status,
-        input,
-        metadata,
-        concurrency_key,
-        dedupe_key,
-        supersede_key,
-        channels,
-        attempt,
-        max_attempts,
-        scheduled_at,
-        created_at,
-        updated_at
-      )
-      values (?, ?, 'queued', ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?)
+    insert into "${context.names.tasksTable}" (
+    id,
+    kind,
+    status,
+    input,
+    metadata,
+    concurrency_key,
+    dedupe_key,
+    supersede_key,
+    channels,
+    attempt,
+    max_attempts,
+    scheduled_at,
+    created_at,
+    updated_at
+    )
+    values (?, ?, 'queued', ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?)
     `,
     values,
   );

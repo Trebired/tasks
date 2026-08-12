@@ -4,7 +4,7 @@ function normalizeTaskChannel(value: string): string {
   return value.trim();
 }
 
-function uniqueChannels(values: Array<string | null | undefined>): string[] {
+function uniqueChannels(values: Array<string|null|undefined>): string[] {
   const out: string[] = [];
   const seen = new Set<string>();
 
@@ -59,14 +59,14 @@ function normalizeTaskChannels(channels?: string[] | null): string[] {
   return uniqueChannels(channels || []);
 }
 
-function resolveTaskChannels(task: Pick<TaskRecord, "channels" | "concurrencyKey" | "dedupeKey" | "id" | "kind" | "supersedeKey">): string[] {
+function resolveTaskChannels(task: Pick<TaskRecord, "channels"|"concurrencyKey"|"dedupeKey"|"id"|"kind"|"supersedeKey">): string[] {
   return uniqueChannels([
-    taskChannel.task(task.id),
-    taskChannel.kind(task.kind),
-    task.dedupeKey ? taskChannel.dedupe(task.dedupeKey) : null,
-    task.concurrencyKey ? taskChannel.concurrency(task.concurrencyKey) : null,
-    task.supersedeKey ? taskChannel.supersede(task.supersedeKey) : null,
-    ...(task.channels || []),
+      taskChannel.task(task.id),
+      taskChannel.kind(task.kind),
+      task.dedupeKey ? taskChannel.dedupe(task.dedupeKey) : null,
+      task.concurrencyKey ? taskChannel.concurrency(task.concurrencyKey) : null,
+      task.supersedeKey ? taskChannel.supersede(task.supersedeKey) : null,
+      ...(task.channels || []),
   ]);
 }
 

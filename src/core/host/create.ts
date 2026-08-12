@@ -32,8 +32,8 @@ function createTaskHost(options: TaskHostOptions): TaskHost {
       await schedulePump();
       return result;
     },
-    getTask: <TInput = unknown, TResult = unknown>(taskId: string) => context.store.getTask<TInput, TResult>(taskId),
-    listTasks: <TInput = unknown, TResult = unknown>(query) => context.store.listTasks<TInput, TResult>(query),
+    getTask: <TInput = unknown, TResult = unknown > (taskId: string) => context.store.getTask<TInput, TResult>(taskId),
+    listTasks: <TInput = unknown, TResult = unknown > (query) => context.store.listTasks<TInput, TResult>(query),
     listTaskSteps: (taskId, query) => context.store.listTaskSteps(taskId, query),
     readSnapshot: (taskId, readOptions) => readTaskSnapshot(context, taskId, readOptions),
     listSnapshots: (query) => listTaskSnapshots(context, query),

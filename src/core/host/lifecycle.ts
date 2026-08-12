@@ -72,8 +72,8 @@ function startTaskHostTimers(context: TaskHostContext, schedulePump: () => Promi
 
 function createTimer(intervalMs: number, run: () => Promise<unknown>): ReturnType<typeof setInterval> {
   const timer = setInterval(() => {
-    void run();
-  }, intervalMs);
+      void run();
+    }, intervalMs);
   timer.unref?.();
   return timer;
 }
@@ -116,8 +116,8 @@ function createRunnerEvent(context: TaskHostContext, type: "runner:start" | "run
 
 function logTaskRunnerStart(context: TaskHostContext): void {
   context.logger.info(TASKS_LOG_GROUP, "task runner started", {
-    runnerId: context.runnerId,
-    concurrency: context.globalConcurrency,
+      runnerId: context.runnerId,
+      concurrency: context.globalConcurrency,
   });
 }
 

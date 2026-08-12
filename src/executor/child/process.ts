@@ -8,33 +8,33 @@ import type {
   TaskExecutorOutcome,
   TaskExecutorProgressEvent,
   TaskExecutorRunRequest,
-} from "#ksjjcxvzvz26";
-import { toErrorShape } from "#g6h3y0rvrh9n";
+} from "#2kjvrax0gr4m";
+import { toErrorShape } from "#92c6666f713d";
 import { resolveTaskModuleSpecifier } from "#sqsl30t1mk0x";
 
 type ChildWorkerMessage =
-  | {
+| {
+  type: "progress";
+  progress: TaskExecutorProgressEvent extends infer T ? T extends {
     type: "progress";
-    progress: TaskExecutorProgressEvent extends infer T ? T extends {
-      type: "progress";
-      progress: infer P;
-    } ? P : never : never;
-  }
-  | {
+    progress: infer P;
+  } ? P : never : never;
+}
+| {
+  type: "step";
+  step: TaskExecutorProgressEvent extends infer T ? T extends {
     type: "step";
-    step: TaskExecutorProgressEvent extends infer T ? T extends {
-      type: "step";
-      step: infer P;
-    } ? P : never : never;
-  }
-  | {
-    type: "result";
-    output: unknown;
-  }
-  | {
-    type: "error";
-    error: ReturnType<typeof toErrorShape>;
-  };
+    step: infer P;
+  } ? P : never : never;
+}
+| {
+  type: "result";
+  output: unknown;
+}
+| {
+  type: "error";
+  error: ReturnType<typeof toErrorShape>;
+};
 
 function resolveRuntimeCommand(runtime: "inherit" | "node" | "bun", options: ChildProcessTaskExecutorOptions): {
   command: string;
@@ -88,9 +88,9 @@ function spawnChildProcess(options: ChildProcessTaskExecutorOptions, request: Ta
   const workerPath = fileURLToPath(new URL("./process_worker.js", import.meta.url));
 
   return spawn(runtimeCommand.command, [...runtimeCommand.prefixArgs, workerPath], {
-    cwd: request.handler.entrypoint.cwd || process.cwd(),
-    env: createChildWorkerEnv(options, request),
-    stdio: ["ignore", "pipe", "pipe"],
+      cwd: request.handler.entrypoint.cwd || process.cwd(),
+      env: createChildWorkerEnv(options, request),
+      stdio: ["ignore", "pipe", "pipe"],
   });
 }
 
@@ -100,21 +100,21 @@ function createChildWorkerEnv(options: ChildProcessTaskExecutorOptions, request:
     ...options.env,
     ...request.handler.entrypoint.env,
     TB_TASK_CHILD_PAYLOAD: JSON.stringify({
-      task: {
-        id: request.task.id,
-        kind: request.task.kind,
-        attempt: request.task.attempt,
-        maxAttempts: request.task.maxAttempts,
-        metadata: request.task.metadata ?? null,
-        channels: request.task.channels || [],
-        dedupeKey: request.task.dedupeKey ?? null,
-        supersedeKey: request.task.supersedeKey ?? null,
-        input: request.task.input,
-      },
-      handler: {
-        module: resolveTaskModuleSpecifier(request.handler.entrypoint.module),
-        export: request.handler.entrypoint.export,
-      },
+        task: {
+          id: request.task.id,
+          kind: request.task.kind,
+          attempt: request.task.attempt,
+          maxAttempts: request.task.maxAttempts,
+          metadata: request.task.metadata ?? null,
+          channels: request.task.channels || [],
+          dedupeKey: request.task.dedupeKey ?? null,
+          supersedeKey: request.task.supersedeKey ?? null,
+          input: request.task.input,
+        },
+        handler: {
+          module: resolveTaskModuleSpecifier(request.handler.entrypoint.module),
+          export: request.handler.entrypoint.export,
+        },
     }),
   };
 }
@@ -137,15 +137,15 @@ function attachChildStdout(
 ): void {
   child.stdout?.setEncoding("utf8");
   child.stdout?.on("data", (chunk: string) => {
-    state.buffer += chunk;
-    consumeBufferedLines(state, request);
+      state.buffer += chunk;
+      consumeBufferedLines(state, request);
   });
 }
 
 function attachChildStderr(child: ReturnType<typeof spawn>, state: ReturnType<typeof createChildProcessState>): void {
   child.stderr?.setEncoding("utf8");
   child.stderr?.on("data", (chunk: string) => {
-    state.stderr += chunk;
+      state.stderr += chunk;
   });
 }
 
@@ -178,8 +178,8 @@ function consumeWorkerLine(
   }
 
   state.outcome = message.type === "result"
-    ? { status: "succeeded", output: message.output }
-    : { status: state.cancelled ? "cancelled" : "failed", error: message.error };
+  ? { status: "succeeded", output: message.output }
+  : { status: state.cancelled ? "cancelled" : "failed", error: message.error };
 }
 
 function parseWorkerMessage(line: string): ChildWorkerMessage | null {
@@ -199,28 +199,28 @@ function createChildCompletion(
   state: ReturnType<typeof createChildProcessState>,
 ): Promise<TaskExecutorOutcome> {
   return new Promise<TaskExecutorOutcome>((resolve) => {
-    child.on("exit", async (code, signal) => {
-      if (state.settled) {
-        return;
-      }
+      child.on("exit", async(code, signal) => {
+          if (state.settled) {
+            return;
+          }
 
-      state.settled = true;
-      await state.eventChain;
-      resolve(resolveExitOutcome(state, code, signal));
-    });
-
-    child.on("error", async (error) => {
-      if (state.settled) {
-        return;
-      }
-
-      state.settled = true;
-      await state.eventChain;
-      resolve({
-        status: state.cancelled ? "cancelled" : "failed",
-        error: toErrorShape(error),
+          state.settled = true;
+          await state.eventChain;
+          resolve(resolveExitOutcome(state, code, signal));
       });
-    });
+
+      child.on("error", async(error) => {
+          if (state.settled) {
+            return;
+          }
+
+          state.settled = true;
+          await state.eventChain;
+          resolve({
+              status: state.cancelled ? "cancelled" : "failed",
+              error: toErrorShape(error),
+          });
+      });
   });
 }
 
@@ -263,10 +263,10 @@ async function cancelChildProcess(
 
   const killTimeoutMs = options.killTimeoutMs ?? 5_000;
   setTimeout(() => {
-    if (child.exitCode == null && child.signalCode == null) {
-      child.kill("SIGKILL");
-    }
-  }, killTimeoutMs).unref?.();
+      if (child.exitCode == null && child.signalCode == null) {
+        child.kill("SIGKILL");
+      }
+    }, killTimeoutMs).unref?.();
 }
 
 export {

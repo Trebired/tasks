@@ -18,7 +18,7 @@ function createSchemaSql(schema: string): string {
 
 function createTasksTableSql(names: ReturnType<typeof resolveNames>): string {
   return `
-create table if not exists ${names.tasksQualified} (
+  create table if not exists ${names.tasksQualified} (
   id text primary key,
   kind text not null,
   status text not null,
@@ -49,12 +49,12 @@ create table if not exists ${names.tasksQualified} (
   retry_scheduled_at timestamptz,
   stale_at timestamptz,
   stale_reason text
-);`.trim();
+  );`.trim();
 }
 
 function createStepsTableSql(names: ReturnType<typeof resolveNames>): string {
   return `
-create table if not exists ${names.stepsQualified} (
+  create table if not exists ${names.stepsQualified} (
   id bigint generated always as identity primary key,
   task_id text not null references ${names.tasksQualified}(id) on delete cascade,
   attempt integer not null default 0,
@@ -64,7 +64,7 @@ create table if not exists ${names.stepsQualified} (
   meta jsonb,
   percent double precision,
   created_at timestamptz not null default now()
-);`.trim();
+  );`.trim();
 }
 
 function createTaskUpgradeSql(names: ReturnType<typeof resolveNames>): string[] {

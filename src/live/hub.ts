@@ -20,17 +20,17 @@ function createTaskLiveHub(host: TaskHost): TaskLiveHub {
     async subscribe(query: TaskSubscriptionQuery = {}, listener) {
       await listener(await createSubscriptionBootstrap(host, query));
 
-      const unsubscribe = host.onLifecycleEvent(async (event) => {
-        if (event.snapshot && !matchesTaskQuery(event.snapshot, query)) {
-          return;
-        }
+      const unsubscribe = host.onLifecycleEvent(async(event) => {
+          if (event.snapshot && !matchesTaskQuery(event.snapshot, query)) {
+            return;
+          }
 
-        const message: TaskLiveMessage = {
-          type: "event",
-          timestamp: nowIso(),
-          event,
-        };
-        await listener(message);
+          const message: TaskLiveMessage = {
+            type: "event",
+            timestamp: nowIso(),
+            event,
+          };
+          await listener(message);
       });
 
       return unsubscribe;

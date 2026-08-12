@@ -1,17 +1,17 @@
-export type PostgresTaskQueryResult<T = Record<string, unknown>> = {
+export type PostgresTaskQueryResult<T=Record<string, unknown>> = {
   rows: T[];
   rowCount?: number | null;
 };
 
 export type PostgresTaskQueryable = {
-  query: <T = Record<string, unknown>>(sql: string, params?: unknown[]) => Promise<PostgresTaskQueryResult<T>>;
+  query: <T = Record < string, unknown >> (sql: string, params?: unknown[]) => Promise<PostgresTaskQueryResult<T>>;
 };
 
-export type PostgresTaskPoolClient = PostgresTaskQueryable & {
+export type PostgresTaskPoolClient = PostgresTaskQueryable& {
   release: () => void;
 };
 
-export type PostgresTaskPool = PostgresTaskQueryable & {
+export type PostgresTaskPool = PostgresTaskQueryable& {
   connect: () => Promise<PostgresTaskPoolClient>;
 };
 
@@ -33,8 +33,8 @@ export type SqliteTaskStatementResult = {
 
 export type SqliteTaskStatement = {
   run: (...params: unknown[]) => SqliteTaskStatementResult | unknown;
-  get: <T = Record<string, unknown>>(...params: unknown[]) => T | undefined;
-  all: <T = Record<string, unknown>>(...params: unknown[]) => T[];
+  get: <T = Record < string, unknown >> (...params: unknown[]) => T | undefined;
+  all: <T = Record < string, unknown >> (...params: unknown[]) => T[];
 };
 
 export type SqliteTaskDatabase = {
@@ -64,38 +64,38 @@ export type InProcessTaskExecutorOptions = {
 export type ChildProcessTaskExecutorOptions = {
   command?: string;
   args?: string[];
-  env?: Record<string, string | undefined>;
+  env?: Record<string, string|undefined>;
   killTimeoutMs?: number;
 };
 
 export type TaskStoreDriver = "postgres" | "sqlite";
 
 export type TaskStoreFactoryOptions =
-  | {
-      driver: "postgres";
-      postgres: PostgresTaskStoreOptions;
-    }
-  | {
-      driver: "sqlite";
-      sqlite: SqliteTaskStoreOptions;
-    };
+| {
+  driver: "postgres";
+  postgres: PostgresTaskStoreOptions;
+}
+| {
+  driver: "sqlite";
+  sqlite: SqliteTaskStoreOptions;
+};
 
 export type TaskStoreSchemaFactoryOptions =
-  | {
-      driver: "postgres";
-      postgres?: PostgresTaskSchemaOptions;
-    }
-  | {
-      driver: "sqlite";
-      sqlite?: SqliteTaskSchemaOptions;
-    };
+| {
+  driver: "postgres";
+  postgres?: PostgresTaskSchemaOptions;
+}
+| {
+  driver: "sqlite";
+  sqlite?: SqliteTaskSchemaOptions;
+};
 
 export type TaskStorePrepareOptions =
-  | {
-      driver: "postgres";
-      postgres: PostgresTaskStoreOptions;
-    }
-  | {
-      driver: "sqlite";
-      sqlite?: SqliteTaskSchemaOptions;
-    };
+| {
+  driver: "postgres";
+  postgres: PostgresTaskStoreOptions;
+}
+| {
+  driver: "sqlite";
+  sqlite?: SqliteTaskSchemaOptions;
+};

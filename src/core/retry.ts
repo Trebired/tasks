@@ -28,10 +28,10 @@ function resolveBackoffMs(attempt: number, backoff?: TaskRetryBackoff | null): n
 }
 
 async function resolveRetryDecision(input: {
-  task: TaskRecord;
-  handler: TaskHandlerRegistration;
-  error: TaskTerminalError;
-  defaultMaxAttempts: number;
+    task: TaskRecord;
+    handler: TaskHandlerRegistration;
+    error: TaskTerminalError;
+    defaultMaxAttempts: number;
 }): Promise<TaskRetryDecision> {
   const policy = input.handler.retry;
   const maxAttempts = Math.max(1, policy?.maxAttempts ?? input.task.maxAttempts ?? input.defaultMaxAttempts);
@@ -66,7 +66,7 @@ async function resolveFunctionRetryDecision(
     return { retry: false };
   }
 
-  if (typeof resolved === "object" && !Array.isArray(resolved) && "retry" in resolved) {
+  if (typeof resolved === "object" && !Array.isArray(resolved) && "retry"in resolved) {
     const decision = resolved as TaskRetryDecision;
     if (!decision.retry) {
       return { retry: false };

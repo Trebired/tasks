@@ -1,7 +1,7 @@
 import process from "node:process";
 
-import type { TaskHandlerModule, TaskTerminalError } from "#ksjjcxvzvz26";
-import { toErrorShape } from "#g6h3y0rvrh9n";
+import type { TaskHandlerModule, TaskTerminalError } from "#2kjvrax0gr4m";
+import { toErrorShape } from "#92c6666f713d";
 import { createTaskHandlerContext } from "#pomfbdrkgf10";
 import { loadTaskHandlerModule } from "#sqsl30t1mk0x";
 
@@ -11,7 +11,7 @@ type ChildWorkerPayload = {
     kind: string;
     attempt: number;
     maxAttempts: number;
-    metadata: Record<string, unknown> | null;
+    metadata: Record<string, unknown>|null;
     channels?: string[];
     dedupeKey?: string | null;
     supersedeKey?: string | null;
@@ -24,32 +24,32 @@ type ChildWorkerPayload = {
 };
 
 type ChildWorkerMessage =
-  | {
-    type: "progress";
-    progress: {
-      percent?: number | null;
-      label?: string | null;
-      meta?: Record<string, unknown> | null;
-    };
-  }
-  | {
-    type: "step";
-    step: {
-      kind?: "step" | "event" | "checkpoint" | "log" | string;
-      level?: string;
-      message: string;
-      meta?: Record<string, unknown> | null;
-      percent?: number | null;
-    };
-  }
-  | {
-    type: "result";
-    output: unknown;
-  }
-  | {
-    type: "error";
-    error: TaskTerminalError;
+| {
+  type: "progress";
+  progress: {
+    percent?: number | null;
+    label?: string | null;
+    meta?: Record<string, unknown>|null;
   };
+}
+| {
+  type: "step";
+  step: {
+    kind?: "step" | "event" | "checkpoint" | "log" | string;
+    level?: string;
+    message: string;
+    meta?: Record<string, unknown>|null;
+    percent?: number | null;
+  };
+}
+| {
+  type: "result";
+  output: unknown;
+}
+| {
+  type: "error";
+  error: TaskTerminalError;
+};
 
 function emit(message: ChildWorkerMessage): void {
   process.stdout.write(`${JSON.stringify(message)}\n`);
@@ -63,13 +63,13 @@ async function main(): Promise<void> {
 
   try {
     emit({
-      type: "result",
-      output: await handler.run(payload.task.input, createHandlerContext(payload, controller.signal)),
+        type: "result",
+        output: await handler.run(payload.task.input, createHandlerContext(payload, controller.signal)),
     });
   } catch (error) {
     emit({
-      type: "error",
-      error: toErrorShape(error),
+        type: "error",
+        error: toErrorShape(error),
     });
     process.exitCode = 1;
   }
@@ -96,33 +96,33 @@ function bindProcessSignals(controller: AbortController): void {
 
 function createHandlerContext(payload: ChildWorkerPayload, signal: AbortSignal) {
   return createTaskHandlerContext({
-    id: payload.task.id,
-    kind: payload.task.kind,
-    attempt: payload.task.attempt,
-    maxAttempts: payload.task.maxAttempts,
-    metadata: payload.task.metadata,
-    channels: payload.task.channels || [],
-    dedupeKey: payload.task.dedupeKey ?? null,
-    supersedeKey: payload.task.supersedeKey ?? null,
-  }, signal, async (event) => {
-    if (event.type === "progress") {
-      emit({
-        type: "progress",
-        progress: event.progress,
-      });
-      return;
-    }
+      id: payload.task.id,
+      kind: payload.task.kind,
+      attempt: payload.task.attempt,
+      maxAttempts: payload.task.maxAttempts,
+      metadata: payload.task.metadata,
+      channels: payload.task.channels || [],
+      dedupeKey: payload.task.dedupeKey ?? null,
+      supersedeKey: payload.task.supersedeKey ?? null,
+    }, signal, async(event) => {
+      if (event.type === "progress") {
+        emit({
+            type: "progress",
+            progress: event.progress,
+        });
+        return;
+      }
 
-    emit({
-      type: "step",
-      step: {
-        kind: event.step.kind ?? "step",
-        level: event.step.level ?? "info",
-        message: event.step.message || event.step.label || "step",
-        meta: event.step.meta ?? null,
-        percent: event.step.percent ?? event.step.progressPercent ?? null,
-      },
-    });
+      emit({
+          type: "step",
+          step: {
+            kind: event.step.kind ?? "step",
+            level: event.step.level ?? "info",
+            message: event.step.message || event.step.label || "step",
+            meta: event.step.meta ?? null,
+            percent: event.step.percent ?? event.step.progressPercent ?? null,
+          },
+      });
   });
 }
 

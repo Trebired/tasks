@@ -6,36 +6,36 @@ import { nowIso } from "#92c6666f713d";
 import type { PostgresTaskStoreContext, TaskRow } from "./shared.js";
 import { mapTaskRow, taskToken, withTransaction } from "./shared.js";
 
-async function claimNextTask<TInput = unknown, TResult = unknown>(
+async function claimNextTask<TInput=unknown, TResult=unknown>(
   context: PostgresTaskStoreContext,
   input: TaskClaimNextOptions,
-): Promise<TaskRecord<TInput, TResult> | null> {
+): Promise<TaskRecord<TInput, TResult>|null> {
   if (!input.kinds.length) {
     return null;
   }
 
-  return withTransaction(context.client, async (tx) => {
-    await tx.query("select pg_advisory_xact_lock(hashtext($1))", [`${context.names.schema}.${context.names.tasksTable}.claim`]);
-    if (await reachedGlobalConcurrency(tx, context, input.globalConcurrency)) {
+  return withTransaction(context.client, async(tx) => {
+      await tx.query("select pg_advisory_xact_lock(hashtext($1))", [`${context.names.schema}.${context.names.tasksTable}.claim`]);
+      if (await reachedGlobalConcurrency(tx, context, input.globalConcurrency)) {
+        return null;
+      }
+
+      const busyKeySet = await readBusyKeySet(tx, context);
+      const kindCountCache = new Map<string, number>();
+      const queued = await selectQueuedCandidates(tx, context, input);
+
+      for (const row of queued.rows) {
+        if (await isRowBlocked(tx, context, input, row, busyKeySet, kindCountCache)) {
+          continue;
+        }
+
+        const claimed = await claimQueuedRow(tx, context, input, row);
+        if (claimed) {
+          return claimed as TaskRecord<TInput, TResult>;
+        }
+      }
+
       return null;
-    }
-
-    const busyKeySet = await readBusyKeySet(tx, context);
-    const kindCountCache = new Map<string, number>();
-    const queued = await selectQueuedCandidates(tx, context, input);
-
-    for (const row of queued.rows) {
-      if (await isRowBlocked(tx, context, input, row, busyKeySet, kindCountCache)) {
-        continue;
-      }
-
-      const claimed = await claimQueuedRow(tx, context, input, row);
-      if (claimed) {
-        return claimed as TaskRecord<TInput, TResult>;
-      }
-    }
-
-    return null;
   });
 }
 
@@ -48,7 +48,7 @@ async function reachedGlobalConcurrency(
     return false;
   }
 
-  const count = await tx.query<{ count: string }>(`
+  const count = await tx.query<{count:string}>(`
     select count(*)::text as count
     from ${context.names.tasksQualified}
     where status in ('claimed', 'running')
@@ -60,11 +60,11 @@ async function readBusyKeySet(
   tx: Awaited<ReturnType<PostgresTaskStoreContext["client"]["connect"]>>,
   context: PostgresTaskStoreContext,
 ): Promise<Set<string>> {
-  const busyKeys = await tx.query<{ concurrency_key: string }>(`
+  const busyKeys = await tx.query<{concurrency_key:string}>(`
     select distinct concurrency_key
     from ${context.names.tasksQualified}
     where status in ('claimed', 'running')
-      and concurrency_key is not null
+    and concurrency_key is not null
   `);
   return new Set(busyKeys.rows.map((row) => row.concurrency_key));
 }
@@ -78,12 +78,12 @@ async function selectQueuedCandidates(
     select *
     from ${context.names.tasksQualified}
     where status = 'queued'
-      and kind = any($1::text[])
-      and scheduled_at <= $2::timestamptz
+    and kind = any($1::text[])
+    and scheduled_at <= $2::timestamptz
     order by scheduled_at asc, created_at asc
     limit $3
     for update skip locked
-  `, [input.kinds, nowIso(input.now), Math.max(1, input.candidateLimit ?? 100)]);
+    `, [input.kinds, nowIso(input.now), Math.max(1, input.candidateLimit ?? 100)]);
 }
 
 async function isRowBlocked(
@@ -127,12 +127,12 @@ async function countRunningKind(
   context: PostgresTaskStoreContext,
   kind: string,
 ): Promise<number> {
-  const result = await tx.query<{ count: string }>(`
+  const result = await tx.query<{count:string}>(`
     select count(*)::text as count
     from ${context.names.tasksQualified}
     where status in ('claimed', 'running')
-      and kind = $1
-  `, [kind]);
+    and kind = $1
+    `, [kind]);
   return Number(result.rows[0]?.count || "0");
 }
 
@@ -141,30 +141,30 @@ async function claimQueuedRow(
   context: PostgresTaskStoreContext,
   input: TaskClaimNextOptions,
   row: TaskRow,
-): Promise<TaskRecord | null> {
+): Promise<TaskRecord|null> {
   const current = nowIso(input.now);
   const updated = await tx.query<TaskRow>(`
     update ${context.names.tasksQualified}
     set
-      status = 'claimed',
-      attempt = attempt + 1,
-      claimed_at = $2::timestamptz,
-      updated_at = $2::timestamptz,
-      lease_owner = $3,
-      lease_token = $4,
-      lease_expires_at = $5::timestamptz,
-      last_heartbeat_at = $2::timestamptz,
-      stale_at = null,
-      stale_reason = null
+    status = 'claimed',
+    attempt = attempt + 1,
+    claimed_at = $2::timestamptz,
+    updated_at = $2::timestamptz,
+    lease_owner = $3,
+    lease_token = $4,
+    lease_expires_at = $5::timestamptz,
+    last_heartbeat_at = $2::timestamptz,
+    stale_at = null,
+    stale_reason = null
     where id = $1
-      and status = 'queued'
+    and status = 'queued'
     returning *
-  `, [
-    row.id,
-    current,
-    input.runnerId,
-    taskToken(),
-    nowIso(Date.parse(current) + input.leaseMs),
+    `, [
+      row.id,
+      current,
+      input.runnerId,
+      taskToken(),
+      nowIso(Date.parse(current) + input.leaseMs),
   ]);
 
   return updated.rows[0] ? mapTaskRow(updated.rows[0]) : null;

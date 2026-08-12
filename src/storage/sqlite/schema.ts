@@ -13,7 +13,7 @@ function createSqliteTaskStoreSchema(options: SqliteTaskSchemaOptions = {}): str
 
 function createTasksTableSql(tasksTable: string): string {
   return `
-create table if not exists "${tasksTable}" (
+  create table if not exists "${tasksTable}" (
   id text primary key,
   kind text not null,
   status text not null,
@@ -44,12 +44,12 @@ create table if not exists "${tasksTable}" (
   retry_scheduled_at text,
   stale_at text,
   stale_reason text
-);`.trim();
+  );`.trim();
 }
 
 function createStepsTableSql(stepsTable: string, tasksTable: string): string {
   return `
-create table if not exists "${stepsTable}" (
+  create table if not exists "${stepsTable}" (
   id integer primary key autoincrement,
   task_id text not null references "${tasksTable}"(id) on delete cascade,
   attempt integer not null default 0,
@@ -59,7 +59,7 @@ create table if not exists "${stepsTable}" (
   meta text,
   percent real,
   created_at text not null
-);`.trim();
+  );`.trim();
 }
 
 function createSqliteIndexSql(names: ReturnType<typeof resolveSqliteNames>): string[] {

@@ -33,48 +33,48 @@ async function handleLostTaskLease(context: TaskHostContext, running: RunningExe
   clearHeartbeatTimer(running);
   await running.handle.cancel("Task lease lost");
   emitTaskHostEvent(context, {
-    type: "task:lease_lost",
-    timestamp: nowIso(),
-    runnerId: context.runnerId,
-    taskId: running.task.id,
-    kind: running.task.kind,
-    task: running.task,
-    result: result.conflict("task-lease-lost", {
-      details: {
-        message: "Task lease was lost during execution.",
-        runnerId: context.runnerId,
-        taskId: running.task.id,
-      },
-    }),
+      type: "task:lease_lost",
+      timestamp: nowIso(),
+      runnerId: context.runnerId,
+      taskId: running.task.id,
+      kind: running.task.kind,
+      task: running.task,
+      result: result.conflict("task-lease-lost", {
+          details: {
+            message: "Task lease was lost during execution.",
+            runnerId: context.runnerId,
+            taskId: running.task.id,
+          },
+      }),
   });
 }
 
 async function failTaskExecution(context: TaskHostContext, task: TaskRecord, error: unknown): Promise<void> {
   const failed = await context.store.markTaskFailed({
-    taskId: task.id,
-    runnerId: context.runnerId,
-    leaseToken: task.leaseToken || "",
-    error: toErrorShape(error),
-    finishedAt: nowIso(),
+      taskId: task.id,
+      runnerId: context.runnerId,
+      leaseToken: task.leaseToken || "",
+      error: toErrorShape(error),
+      finishedAt: nowIso(),
   });
   emitTaskHostEvent(context, {
-    type: "task:failed",
-    timestamp: nowIso(),
-    runnerId: context.runnerId,
-    taskId: task.id,
-    kind: task.kind,
-    task: failed,
-    error,
-    result: result.internal("task-failed", {
-      details: {
-        message: "Task execution failed.",
-        runnerId: context.runnerId,
-        taskId: task.id,
-      },
-      meta: {
-        error: toErrorShape(error),
-      },
-    }),
+      type: "task:failed",
+      timestamp: nowIso(),
+      runnerId: context.runnerId,
+      taskId: task.id,
+      kind: task.kind,
+      task: failed,
+      error,
+      result: result.internal("task-failed", {
+          details: {
+            message: "Task execution failed.",
+            runnerId: context.runnerId,
+            taskId: task.id,
+          },
+          meta: {
+            error: toErrorShape(error),
+          },
+      }),
   });
 }
 
@@ -110,52 +110,52 @@ async function settleTaskOutcome(
 
 async function markTaskSucceeded(context: TaskHostContext, running: RunningExecution, output: unknown): Promise<void> {
   const task = await context.store.markTaskSucceeded({
-    taskId: running.task.id,
-    runnerId: context.runnerId,
-    leaseToken: running.task.leaseToken || "",
-    output,
-    finishedAt: nowIso(),
+      taskId: running.task.id,
+      runnerId: context.runnerId,
+      leaseToken: running.task.leaseToken || "",
+      output,
+      finishedAt: nowIso(),
   });
   emitTaskHostEvent(context, {
-    type: "task:succeeded",
-    timestamp: nowIso(),
-    runnerId: context.runnerId,
-    taskId: running.task.id,
-    kind: running.task.kind,
-    task,
-    output,
-    result: result.ok("task-execution-succeeded", {
-      data: output ?? null,
-      details: {
-        runnerId: context.runnerId,
-        taskId: running.task.id,
-      },
-    }),
+      type: "task:succeeded",
+      timestamp: nowIso(),
+      runnerId: context.runnerId,
+      taskId: running.task.id,
+      kind: running.task.kind,
+      task,
+      output,
+      result: result.ok("task-execution-succeeded", {
+          data: output ?? null,
+          details: {
+            runnerId: context.runnerId,
+            taskId: running.task.id,
+          },
+      }),
   });
 }
 
 async function markTaskCancelled(context: TaskHostContext, running: RunningExecution, reason?: string): Promise<void> {
   const task = await context.store.markTaskCancelled({
-    taskId: running.task.id,
-    runnerId: context.runnerId,
-    leaseToken: running.task.leaseToken || "",
-    reason: reason || "Task cancelled",
-    finishedAt: nowIso(),
+      taskId: running.task.id,
+      runnerId: context.runnerId,
+      leaseToken: running.task.leaseToken || "",
+      reason: reason || "Task cancelled",
+      finishedAt: nowIso(),
   });
   emitTaskHostEvent(context, {
-    type: "task:cancelled",
-    timestamp: nowIso(),
-    runnerId: context.runnerId,
-    taskId: running.task.id,
-    kind: running.task.kind,
-    task,
-    result: result.noop("task-cancelled", {
-      details: {
-        message: reason || "Task cancelled.",
-        runnerId: context.runnerId,
-        taskId: running.task.id,
-      },
-    }),
+      type: "task:cancelled",
+      timestamp: nowIso(),
+      runnerId: context.runnerId,
+      taskId: running.task.id,
+      kind: running.task.kind,
+      task,
+      result: result.noop("task-cancelled", {
+          details: {
+            message: reason || "Task cancelled.",
+            runnerId: context.runnerId,
+            taskId: running.task.id,
+          },
+      }),
   });
 }
 
@@ -166,10 +166,10 @@ async function handleTaskFailureOutcome(
   error: TaskTerminalError,
 ): Promise<void> {
   const retry = await resolveRetryDecision({
-    task: running.task,
-    handler,
-    error,
-    defaultMaxAttempts: context.defaultMaxAttempts,
+      task: running.task,
+      handler,
+      error,
+      defaultMaxAttempts: context.defaultMaxAttempts,
   });
   if (retry.retry && retry.scheduledAt) {
     await requeueFailedTask(context, running, error, retry.scheduledAt);
@@ -177,30 +177,30 @@ async function handleTaskFailureOutcome(
   }
 
   const task = await context.store.markTaskFailed({
-    taskId: running.task.id,
-    runnerId: context.runnerId,
-    leaseToken: running.task.leaseToken || "",
-    error,
-    finishedAt: nowIso(),
+      taskId: running.task.id,
+      runnerId: context.runnerId,
+      leaseToken: running.task.leaseToken || "",
+      error,
+      finishedAt: nowIso(),
   });
   emitTaskHostEvent(context, {
-    type: "task:failed",
-    timestamp: nowIso(),
-    runnerId: context.runnerId,
-    taskId: running.task.id,
-    kind: running.task.kind,
-    task,
-    error,
-    result: result.internal("task-failed", {
-      details: {
-        message: "Task execution failed.",
-        runnerId: context.runnerId,
-        taskId: running.task.id,
-      },
-      meta: {
-        error,
-      },
-    }),
+      type: "task:failed",
+      timestamp: nowIso(),
+      runnerId: context.runnerId,
+      taskId: running.task.id,
+      kind: running.task.kind,
+      task,
+      error,
+      result: result.internal("task-failed", {
+          details: {
+            message: "Task execution failed.",
+            runnerId: context.runnerId,
+            taskId: running.task.id,
+          },
+          meta: {
+            error,
+          },
+      }),
   });
 }
 
@@ -211,31 +211,31 @@ async function requeueFailedTask(
   scheduledAt: string | Date | number,
 ): Promise<void> {
   const task = await context.store.requeueTask({
-    taskId: running.task.id,
-    runnerId: context.runnerId,
-    leaseToken: running.task.leaseToken || "",
-    error,
-    scheduledAt: nowIso(scheduledAt),
+      taskId: running.task.id,
+      runnerId: context.runnerId,
+      leaseToken: running.task.leaseToken || "",
+      error,
+      scheduledAt: nowIso(scheduledAt),
   });
   emitTaskHostEvent(context, {
-    type: "task:retry",
-    timestamp: nowIso(),
-    runnerId: context.runnerId,
-    taskId: running.task.id,
-    kind: running.task.kind,
-    task,
-    error,
-    result: result.noop("task-retry-scheduled", {
-      details: {
-        message: "Task scheduled for retry.",
-        runnerId: context.runnerId,
-        scheduledAt: nowIso(scheduledAt),
-        taskId: running.task.id,
-      },
-      meta: {
-        error,
-      },
-    }),
+      type: "task:retry",
+      timestamp: nowIso(),
+      runnerId: context.runnerId,
+      taskId: running.task.id,
+      kind: running.task.kind,
+      task,
+      error,
+      result: result.noop("task-retry-scheduled", {
+          details: {
+            message: "Task scheduled for retry.",
+            runnerId: context.runnerId,
+            scheduledAt: nowIso(scheduledAt),
+            taskId: running.task.id,
+          },
+          meta: {
+            error,
+          },
+      }),
   });
 }
 

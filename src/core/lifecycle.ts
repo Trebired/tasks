@@ -20,45 +20,45 @@ function taskChannelsOrEmpty(task?: TaskRecord | null): string[] {
 function mapLifecycleEventName(type: TaskHostEvent["type"]): TaskLifecycleEventName | null {
   switch (type) {
     case "task:enqueued":
-      return "enqueued";
+    return "enqueued";
     case "task:claimed":
-      return "claimed";
+    return "claimed";
     case "task:running":
-      return "started";
+    return "started";
     case "task:progress":
-      return "progress";
+    return "progress";
     case "task:step":
-      return "step";
+    return "step";
     case "task:retry":
-      return "retried";
+    return "retried";
     case "task:succeeded":
-      return "succeeded";
+    return "succeeded";
     case "task:failed":
-      return "failed";
+    return "failed";
     case "task:cancelled":
-      return "cancelled";
+    return "cancelled";
     case "task:stale":
-      return "stale";
+    return "stale";
     case "task:lease_lost":
-      return "lease_lost";
+    return "lease_lost";
     default:
-      return null;
+    return null;
   }
 }
 
 function createTaskLifecycleEvent(input: {
-  event: TaskLifecycleEventName;
-  timestamp: string;
-  runnerId: string;
-  taskId: string;
-  kind: string;
-  task?: TaskRecord | null;
-  step?: TaskStepRecord | null;
-  disposition?: TaskEnqueueDisposition;
-  supersededTaskIds?: string[];
-  error?: unknown;
-  output?: unknown;
-  result?: TaskLifecycleEvent["result"];
+    event: TaskLifecycleEventName;
+    timestamp: string;
+    runnerId: string;
+    taskId: string;
+    kind: string;
+    task?: TaskRecord | null;
+    step?: TaskStepRecord | null;
+    disposition?: TaskEnqueueDisposition;
+    supersededTaskIds?: string[];
+    error?: unknown;
+    output?: unknown;
+    result?: TaskLifecycleEvent["result"];
 }): TaskLifecycleEvent {
   return {
     type: "task.lifecycle",
@@ -89,17 +89,17 @@ function normalizeTaskHostEvent(event: TaskHostEvent): TaskLifecycleEvent | null
 
   const taskEvent = event as Extract<TaskHostEvent, {
     type:
-      | "task:enqueued"
-      | "task:claimed"
-      | "task:running"
-      | "task:progress"
-      | "task:step"
-      | "task:succeeded"
-      | "task:retry"
-      | "task:failed"
-      | "task:cancelled"
-      | "task:stale"
-      | "task:lease_lost";
+    |"task:enqueued"
+    |"task:claimed"
+    |"task:running"
+    |"task:progress"
+    |"task:step"
+    |"task:succeeded"
+    |"task:retry"
+    |"task:failed"
+    |"task:cancelled"
+    |"task:stale"
+    |"task:lease_lost";
   }>;
 
   const lifecycle = mapLifecycleEventName(taskEvent.type);
@@ -108,18 +108,18 @@ function normalizeTaskHostEvent(event: TaskHostEvent): TaskLifecycleEvent | null
   }
 
   return createTaskLifecycleEvent({
-    event: lifecycle,
-    timestamp: taskEvent.timestamp,
-    runnerId: taskEvent.runnerId,
-    taskId: taskEvent.taskId,
-    kind: taskEvent.kind,
-    task: taskEvent.task,
-    step: taskEvent.step,
-    disposition: taskEvent.disposition,
-    supersededTaskIds: taskEvent.supersededTaskIds,
-    error: taskEvent.error,
-    output: taskEvent.output,
-    result: taskEvent.result,
+      event: lifecycle,
+      timestamp: taskEvent.timestamp,
+      runnerId: taskEvent.runnerId,
+      taskId: taskEvent.taskId,
+      kind: taskEvent.kind,
+      task: taskEvent.task,
+      step: taskEvent.step,
+      disposition: taskEvent.disposition,
+      supersededTaskIds: taskEvent.supersededTaskIds,
+      error: taskEvent.error,
+      output: taskEvent.output,
+      result: taskEvent.result,
   });
 }
 

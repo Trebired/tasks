@@ -32,22 +32,22 @@ async function trimTaskSteps(context: PostgresTaskStoreContext, stepLimitPerTask
     };
   }
 
-  const deleted = await context.client.query<{ task_id: string }>(`
+  const deleted = await context.client.query<{task_id:string}>(`
     with ranked as (
-      select
-        id,
-        task_id,
-        row_number() over (partition by task_id order by id desc) as rn
-      from ${context.names.stepsQualified}
+    select
+    id,
+    task_id,
+    row_number() over (partition by task_id order by id desc) as rn
+    from ${context.names.stepsQualified}
     )
     delete from ${context.names.stepsQualified}
     where id in (
-      select id
-      from ranked
-      where rn > $1
+    select id
+    from ranked
+    where rn > $1
     )
     returning task_id
-  `, [stepLimitPerTask]);
+    `, [stepLimitPerTask]);
 
   return {
     deletedSteps: Number(deleted.rowCount || 0),
@@ -59,10 +59,10 @@ async function deleteTasksByTtl(context: PostgresTaskStoreContext, policy: TaskR
   let deletedTasks = 0;
 
   for (const [status, ttlMs] of [
-    ["succeeded", policy.successTtlMs],
-    ["failed", policy.failedTtlMs],
-    ["cancelled", policy.cancelledTtlMs],
-  ] as const) {
+      ["succeeded", policy.successTtlMs],
+      ["failed", policy.failedTtlMs],
+      ["cancelled", policy.cancelledTtlMs],
+    ] as const) {
     if (!ttlMs || ttlMs <= 0) {
       continue;
     }
@@ -71,9 +71,9 @@ async function deleteTasksByTtl(context: PostgresTaskStoreContext, policy: TaskR
     const deleted = await context.client.query(`
       delete from ${context.names.tasksQualified}
       where status = $1
-        and finished_at is not null
-        and finished_at < $2::timestamptz
-    `, [status, cutoff]);
+      and finished_at is not null
+      and finished_at < $2::timestamptz
+      `, [status, cutoff]);
     deletedTasks += Number(deleted.rowCount || 0);
   }
 
@@ -97,19 +97,19 @@ async function deleteRankedTasks(
 
   const deleted = await context.client.query(`
     with ranked as (
-      select
-        id,
-        row_number() over (partition by kind order by finished_at desc nulls last, created_at desc) as rn
-      from ${context.names.tasksQualified}
-      where status = $2
+    select
+    id,
+    row_number() over (partition by kind order by finished_at desc nulls last, created_at desc) as rn
+    from ${context.names.tasksQualified}
+    where status = $2
     )
     delete from ${context.names.tasksQualified}
     where id in (
-      select id
-      from ranked
-      where rn > $1
+    select id
+    from ranked
+    where rn > $1
     )
-  `, [limit, status]);
+    `, [limit, status]);
 
   return Number(deleted.rowCount || 0);
 }

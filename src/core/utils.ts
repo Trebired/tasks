@@ -67,7 +67,7 @@ export function toErrorShape(error: unknown, fallbackMessage = "Task execution f
   };
 }
 
-export function toRecord(value: unknown): Record<string, unknown> | null {
+export function toRecord(value: unknown): Record<string, unknown>|null {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     return null;
   }
@@ -97,10 +97,10 @@ export async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Pr
   }
 
   const timeout = new Promise<never>((_, reject) => {
-    const timer = setTimeout(() => {
-      clearTimeout(timer);
-      reject(new Error(`Timed out after ${timeoutMs}ms`));
-    }, timeoutMs);
+      const timer = setTimeout(() => {
+          clearTimeout(timer);
+          reject(new Error(`Timed out after ${timeoutMs}ms`));
+        }, timeoutMs);
   });
 
   return Promise.race([promise, timeout]);

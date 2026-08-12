@@ -1,6 +1,16 @@
 import { resolveLogger } from "@package/logger-adapter";
 
-import { DEFAULT_TASK_GLOBAL_CONCURRENCY, DEFAULT_TASK_HEARTBEAT_MS, DEFAULT_TASK_LEASE_MS, DEFAULT_TASK_MAX_ATTEMPTS, DEFAULT_TASK_POLL_INTERVAL_MS, DEFAULT_TASK_STALE_SCAN_INTERVAL_MS, DEFAULT_TASK_STALE_SCAN_LIMIT, DEFAULT_TASK_STOP_TIMEOUT_MS, TASKS_PACKAGE_NAME } from "#0bba403f3e43";
+import {
+  DEFAULT_TASK_GLOBAL_CONCURRENCY,
+  DEFAULT_TASK_HEARTBEAT_MS,
+  DEFAULT_TASK_LEASE_MS,
+  DEFAULT_TASK_MAX_ATTEMPTS,
+  DEFAULT_TASK_POLL_INTERVAL_MS,
+  DEFAULT_TASK_STALE_SCAN_INTERVAL_MS,
+  DEFAULT_TASK_STALE_SCAN_LIMIT,
+  DEFAULT_TASK_STOP_TIMEOUT_MS,
+  TASKS_PACKAGE_NAME,
+} from "#0bba403f3e43";
 import type {
   TaskExecutionHandle,
   TaskExecutor,
@@ -50,7 +60,7 @@ export type TaskHostContext = {
   retentionScanIntervalMs: number;
   stopTimeoutMs: number;
   defaultMaxAttempts: number;
-  pumpPromise: Promise<void> | null;
+  pumpPromise: Promise<void>|null;
   pollTimer: TimerHandle | null;
   staleTimer: TimerHandle | null;
   watchdogTimer: TimerHandle | null;
@@ -59,37 +69,17 @@ export type TaskHostContext = {
 };
 
 function createTaskHostContext(options: TaskHostOptions): TaskHostContext {
+  const runner = createTaskHostRunnerSettings(options);
+
   return {
     store: options.store,
     executor: options.executor ?? createChildProcessTaskExecutor(),
-    handlers: new Map((options.handlers || []).map((handler) => [handler.kind, handler])),
+    handlers: createTaskHostHandlerMap(options),
     eventEmitter: new TaskEventEmitter<TaskHostEventListener>(),
     lifecycleEmitter: new TaskEventEmitter<TaskLifecycleEventListener>(),
-    logger: resolveLogger({
-      logger: options.logger,
-      adapter: options.loggerAdapter,
-      source: TASKS_PACKAGE_NAME,
-    }),
+    logger: createTaskHostLogger(options),
     state: "idle",
-    runnerId: options.runner?.id || taskId(),
-    pollIntervalMs: Math.max(50, options.runner?.pollIntervalMs ?? DEFAULT_TASK_POLL_INTERVAL_MS),
-    heartbeatMs: Math.max(500, options.runner?.heartbeatMs ?? DEFAULT_TASK_HEARTBEAT_MS),
-    leaseMs: Math.max(
-      Math.max(500, options.runner?.heartbeatMs ?? DEFAULT_TASK_HEARTBEAT_MS) * 2,
-      options.runner?.leaseMs ?? DEFAULT_TASK_LEASE_MS,
-    ),
-    globalConcurrency: Math.max(1, options.runner?.globalConcurrency ?? DEFAULT_TASK_GLOBAL_CONCURRENCY),
-    staleScanIntervalMs: Math.max(1_000, options.runner?.staleScanIntervalMs ?? DEFAULT_TASK_STALE_SCAN_INTERVAL_MS),
-    staleScanLimit: Math.max(1, options.runner?.staleScanLimit ?? DEFAULT_TASK_STALE_SCAN_LIMIT),
-    watchdogMs: Math.max(0, options.runner?.watchdogMs ?? 0),
-    watchdogScanIntervalMs: Math.max(
-      1_000,
-      options.runner?.watchdogScanIntervalMs ?? options.runner?.staleScanIntervalMs ?? DEFAULT_TASK_STALE_SCAN_INTERVAL_MS,
-    ),
-    retentionPolicy: options.runner?.retentionPolicy ?? null,
-    retentionScanIntervalMs: Math.max(1_000, options.runner?.retentionScanIntervalMs ?? 60_000),
-    stopTimeoutMs: Math.max(1_000, options.runner?.stopTimeoutMs ?? DEFAULT_TASK_STOP_TIMEOUT_MS),
-    defaultMaxAttempts: Math.max(1, options.defaultMaxAttempts ?? DEFAULT_TASK_MAX_ATTEMPTS),
+    ...runner,
     pumpPromise: null,
     pollTimer: null,
     staleTimer: null,
@@ -99,7 +89,65 @@ function createTaskHostContext(options: TaskHostOptions): TaskHostContext {
   };
 }
 
-function emitTaskHostEvent(context: TaskHostContext, event: TaskHostEvent): void {
+function createTaskHostHandlerMap(options: TaskHostOptions) {
+  return new Map((options.handlers || []).map((handler) => [handler.kind, handler]));
+}
+
+function createTaskHostLogger(options: TaskHostOptions) {
+  return resolveLogger({
+      logger: options.logger,
+      adapter: options.loggerAdapter,
+      source: TASKS_PACKAGE_NAME,
+  });
+}
+
+function createTaskHostRunnerSettings(options: TaskHostOptions) {
+  const heartbeatMs = Math.max(
+    500,
+    options.runner?.heartbeatMs ?? DEFAULT_TASK_HEARTBEAT_MS,
+  );
+
+  return {
+    runnerId: options.runner?.id || taskId(),
+    pollIntervalMs: Math.max(
+      50,
+      options.runner?.pollIntervalMs ?? DEFAULT_TASK_POLL_INTERVAL_MS,
+    ),
+    heartbeatMs,
+    leaseMs: Math.max(heartbeatMs * 2, options.runner?.leaseMs ?? DEFAULT_TASK_LEASE_MS),
+    globalConcurrency: Math.max(
+      1,
+      options.runner?.globalConcurrency ?? DEFAULT_TASK_GLOBAL_CONCURRENCY,
+    ),
+    staleScanIntervalMs: Math.max(
+      1_000,
+      options.runner?.staleScanIntervalMs ?? DEFAULT_TASK_STALE_SCAN_INTERVAL_MS,
+    ),
+    staleScanLimit: Math.max(1, options.runner?.staleScanLimit ?? DEFAULT_TASK_STALE_SCAN_LIMIT),
+    watchdogMs: Math.max(0, options.runner?.watchdogMs ?? 0),
+    watchdogScanIntervalMs: Math.max(
+      1_000,
+      options.runner?.watchdogScanIntervalMs ??
+      options.runner?.staleScanIntervalMs ??
+      DEFAULT_TASK_STALE_SCAN_INTERVAL_MS,
+    ),
+    retentionPolicy: options.runner?.retentionPolicy ?? null,
+    retentionScanIntervalMs: Math.max(1_000, options.runner?.retentionScanIntervalMs ?? 60_000),
+    stopTimeoutMs: Math.max(
+      1_000,
+      options.runner?.stopTimeoutMs ?? DEFAULT_TASK_STOP_TIMEOUT_MS,
+    ),
+    defaultMaxAttempts: Math.max(
+      1,
+      options.defaultMaxAttempts ?? DEFAULT_TASK_MAX_ATTEMPTS,
+    ),
+  };
+}
+
+function emitTaskHostEvent(
+  context: TaskHostContext,
+  event: TaskHostEvent,
+): void {
   context.eventEmitter.emit(event);
   const lifecycle = normalizeTaskHostEvent(event);
   if (lifecycle) {
@@ -107,12 +155,17 @@ function emitTaskHostEvent(context: TaskHostContext, event: TaskHostEvent): void
   }
 }
 
-function registerTaskHostHandler(context: TaskHostContext, handler: TaskHandlerRegistration): void {
+function registerTaskHostHandler(
+  context: TaskHostContext,
+  handler: TaskHandlerRegistration,
+): void {
   context.handlers.set(handler.kind, handler);
 }
 
-function getPerKindConcurrency(context: TaskHostContext): Record<string, number | undefined> {
-  const limits: Record<string, number | undefined> = {};
+function getPerKindConcurrency(
+  context: TaskHostContext,
+): Record<string, number|undefined> {
+  const limits: Record<string, number|undefined> = {};
   for (const [kind, handler] of context.handlers) {
     limits[kind] = handler.concurrency?.limit;
   }

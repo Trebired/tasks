@@ -7,7 +7,7 @@ import { emitTaskHostEvent } from "#yjfcvxwh42t2";
 import type { TaskHostContext } from "#yjfcvxwh42t2";
 
 function createExecutorEventListener(context: TaskHostContext, task: TaskRecord) {
-  return async (event: TaskExecutorProgressEvent) => {
+  return async(event: TaskExecutorProgressEvent) => {
     if (event.type === "progress") {
       await handleTaskProgressEvent(context, task, event.progress);
       return;
@@ -23,26 +23,26 @@ async function handleTaskProgressEvent(
   progress: {
     percent?: number | null;
     label?: string | null;
-    meta?: Record<string, unknown> | null;
+    meta?: Record<string, unknown>|null;
   },
 ): Promise<void> {
   const updated = await context.store.updateTaskProgress({
-    taskId: task.id,
-    runnerId: context.runnerId,
-    leaseToken: task.leaseToken || "",
-    percent: clampPercent(progress.percent),
-    label: progress.label ?? null,
-    meta: progress.meta ?? null,
-    updatedAt: nowIso(),
+      taskId: task.id,
+      runnerId: context.runnerId,
+      leaseToken: task.leaseToken || "",
+      percent: clampPercent(progress.percent),
+      label: progress.label ?? null,
+      meta: progress.meta ?? null,
+      updatedAt: nowIso(),
   });
   mergeUpdatedTask(task, updated);
   emitTaskHostEvent(context, {
-    type: "task:progress",
-    timestamp: nowIso(),
-    runnerId: context.runnerId,
-    taskId: task.id,
-    kind: task.kind,
-    task: updated || task,
+      type: "task:progress",
+      timestamp: nowIso(),
+      runnerId: context.runnerId,
+      taskId: task.id,
+      kind: task.kind,
+      task: updated || task,
   });
 }
 
@@ -51,29 +51,29 @@ async function handleTaskStepEvent(
   task: TaskRecord,
   stepInput: Exclude<TaskExecutorProgressEvent, {
     type: "progress";
-  }>["step"],
+  }> ["step"],
 ): Promise<void> {
   const step = await context.store.appendTaskStep({
-    taskId: task.id,
-    runnerId: context.runnerId,
-    leaseToken: task.leaseToken || "",
-    attempt: task.attempt,
-    kind: stepInput.kind ?? "step",
-    level: stepInput.level ?? "info",
-    message: stepInput.message || stepInput.label || "step",
-    meta: stepInput.meta ?? null,
-    percent: stepInput.percent ?? stepInput.progressPercent ?? null,
-    createdAt: nowIso(),
+      taskId: task.id,
+      runnerId: context.runnerId,
+      leaseToken: task.leaseToken || "",
+      attempt: task.attempt,
+      kind: stepInput.kind ?? "step",
+      level: stepInput.level ?? "info",
+      message: stepInput.message || stepInput.label || "step",
+      meta: stepInput.meta ?? null,
+      percent: stepInput.percent ?? stepInput.progressPercent ?? null,
+      createdAt: nowIso(),
   });
   await updateTaskPercentFromStep(context, task, stepInput);
   emitTaskHostEvent(context, {
-    type: "task:step",
-    timestamp: nowIso(),
-    runnerId: context.runnerId,
-    taskId: task.id,
-    kind: task.kind,
-    task,
-    step,
+      type: "task:step",
+      timestamp: nowIso(),
+      runnerId: context.runnerId,
+      taskId: task.id,
+      kind: task.kind,
+      task,
+      step,
   });
 }
 
@@ -91,11 +91,11 @@ async function updateTaskPercentFromStep(
   }
 
   const updated = await context.store.updateTaskProgress({
-    taskId: task.id,
-    runnerId: context.runnerId,
-    leaseToken: task.leaseToken || "",
-    percent: progressPercent,
-    updatedAt: nowIso(),
+      taskId: task.id,
+      runnerId: context.runnerId,
+      leaseToken: task.leaseToken || "",
+      percent: progressPercent,
+      updatedAt: nowIso(),
   });
   mergeUpdatedTask(task, updated);
 }

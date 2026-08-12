@@ -29,10 +29,10 @@ async function startTaskExecution(
 
   try {
     const handle = await context.executor.execute({
-      task: currentTask,
-      handler,
-      signal: new AbortController().signal,
-      onEvent: createExecutorEventListener(context, currentTask),
+        task: currentTask,
+        handler,
+        signal: new AbortController().signal,
+        onEvent: createExecutorEventListener(context, currentTask),
     });
     await runExecution(context, currentTask, handle, handler, schedulePump);
   } catch (error) {
@@ -43,11 +43,11 @@ async function startTaskExecution(
 
 async function heartbeatTaskExecution(context: TaskHostContext, running: RunningExecution): Promise<void> {
   const renewed = await context.store.renewTaskLease({
-    taskId: running.taskId,
-    runnerId: context.runnerId,
-    leaseToken: running.task.leaseToken || "",
-    leaseMs: context.leaseMs,
-    now: nowIso(),
+      taskId: running.taskId,
+      runnerId: context.runnerId,
+      leaseToken: running.task.leaseToken || "",
+      leaseMs: context.leaseMs,
+      now: nowIso(),
   });
 
   if (!renewed) {
@@ -64,20 +64,20 @@ async function heartbeatTaskExecution(context: TaskHostContext, running: Running
 
 async function markTaskRunning(context: TaskHostContext, task: TaskRecord): Promise<TaskRecord> {
   return await context.store.markTaskRunning({
-    taskId: task.id,
-    runnerId: context.runnerId,
-    leaseToken: task.leaseToken || "",
+      taskId: task.id,
+      runnerId: context.runnerId,
+      leaseToken: task.leaseToken || "",
   }) || task;
 }
 
 function emitRunningEvent(context: TaskHostContext, task: TaskRecord): void {
   emitTaskHostEvent(context, {
-    type: "task:running",
-    timestamp: nowIso(),
-    runnerId: context.runnerId,
-    taskId: task.id,
-    kind: task.kind,
-    task,
+      type: "task:running",
+      timestamp: nowIso(),
+      runnerId: context.runnerId,
+      taskId: task.id,
+      kind: task.kind,
+      task,
   });
 }
 
@@ -99,8 +99,8 @@ async function runExecution(
 
   context.running.set(task.id, running);
   running.heartbeatTimer = setInterval(() => {
-    void heartbeatTaskExecution(context, running);
-  }, context.heartbeatMs);
+      void heartbeatTaskExecution(context, running);
+    }, context.heartbeatMs);
   running.heartbeatTimer.unref?.();
 
   running.settled = settleTaskExecution(context, running, handler, schedulePump);

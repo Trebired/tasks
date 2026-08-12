@@ -32,18 +32,18 @@ function trimTaskSteps(context: SqliteTaskStoreContext, stepLimitPerTask?: numbe
     };
   }
 
-  const rows = executeAll<{ id: number; task_id: string }>(
+  const rows = executeAll<{id:number;task_id:string}>(
     context.db,
     `
-      select id, task_id
-      from (
-        select
-          id,
-          task_id,
-          row_number() over (partition by task_id order by id desc) as rn
-        from "${context.names.stepsTable}"
-      )
-      where rn > ?
+    select id, task_id
+    from (
+    select
+    id,
+    task_id,
+    row_number() over (partition by task_id order by id desc) as rn
+    from "${context.names.stepsTable}"
+    )
+    where rn > ?
     `,
     [stepLimitPerTask],
   );
@@ -66,23 +66,23 @@ function deleteTasksByTtl(context: SqliteTaskStoreContext, policy: TaskRetention
   let deletedTasks = 0;
 
   for (const [status, ttlMs] of [
-    ["succeeded", policy.successTtlMs],
-    ["failed", policy.failedTtlMs],
-    ["cancelled", policy.cancelledTtlMs],
-  ] as const) {
+      ["succeeded", policy.successTtlMs],
+      ["failed", policy.failedTtlMs],
+      ["cancelled", policy.cancelledTtlMs],
+    ] as const) {
     if (!ttlMs || ttlMs <= 0) {
       continue;
     }
 
     const cutoff = nowIso(Date.now() - ttlMs);
-    const rows = executeAll<{ id: string }>(
+    const rows = executeAll<{id:string}>(
       context.db,
       `
-        select id
-        from "${context.names.tasksTable}"
-        where status = ?
-          and finished_at is not null
-          and finished_at < ?
+      select id
+      from "${context.names.tasksTable}"
+      where status = ?
+      and finished_at is not null
+      and finished_at < ?
       `,
       [status, cutoff],
     );
@@ -103,7 +103,7 @@ function deleteTasksByTtl(context: SqliteTaskStoreContext, policy: TaskRetention
 
 function deleteNonLatestTasks(context: SqliteTaskStoreContext, policy: TaskRetentionPolicy): number {
   return deleteRankedTasks(context, "succeeded", policy.keepLatestSuccessesPerKind)
-    + deleteRankedTasks(context, "failed", policy.keepLatestFailuresPerKind);
+  +deleteRankedTasks(context, "failed", policy.keepLatestFailuresPerKind);
 }
 
 function deleteRankedTasks(
@@ -115,18 +115,18 @@ function deleteRankedTasks(
     return 0;
   }
 
-  const rows = executeAll<{ id: string }>(
+  const rows = executeAll<{id:string}>(
     context.db,
     `
-      select id
-      from (
-        select
-          id,
-          row_number() over (partition by kind order by finished_at desc, created_at desc) as rn
-        from "${context.names.tasksTable}"
-        where status = ?
-      )
-      where rn > ?
+    select id
+    from (
+    select
+    id,
+    row_number() over (partition by kind order by finished_at desc, created_at desc) as rn
+    from "${context.names.tasksTable}"
+    where status = ?
+    )
+    where rn > ?
     `,
     [status, limit],
   );

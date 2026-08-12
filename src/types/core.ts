@@ -1,31 +1,31 @@
 export type TaskStatus =
-  | "queued"
-  | "claimed"
-  | "running"
-  | "succeeded"
-  | "failed"
-  | "cancelled";
+|"queued"
+|"claimed"
+|"running"
+|"succeeded"
+|"failed"
+|"cancelled";
 
 export type TaskLifecycleState =
-  | "queued"
-  | "claimed"
-  | "running"
-  | "retrying"
-  | "succeeded"
-  | "failed"
-  | "cancelled"
-  | "stale";
+|"queued"
+|"claimed"
+|"running"
+|"retrying"
+|"succeeded"
+|"failed"
+|"cancelled"
+|"stale";
 
 export type TaskHostState = "idle" | "running" | "stopping" | "stopped";
 
-export type TaskStepKind = "step" | "event" | "checkpoint" | "log" | (string & {});
-export type TaskStepLevel = "debug" | "info" | "success" | "warn" | "error" | (string & {});
+export type TaskStepKind = "step" | "event" | "checkpoint" | "log" | (string& {});
+export type TaskStepLevel = "debug" | "info" | "success" | "warn" | "error" | (string& {});
 
 export type TaskProgressState = {
   state: TaskLifecycleState;
   percent: number | null;
   label: string | null;
-  meta: Record<string, unknown> | null;
+  meta: Record<string, unknown>|null;
   startedAt: string | null;
   updatedAt: string | null;
   finishedAt: string | null;
@@ -43,17 +43,17 @@ export type TaskTerminalError = {
   details?: unknown;
 };
 
-export type TaskRecord<TInput = unknown, TResult = unknown> = {
+export type TaskRecord<TInput=unknown, TResult=unknown> = {
   id: string;
   kind: string;
   status: TaskStatus;
   input: TInput;
   output: TResult | null;
   error: TaskTerminalError | null;
-  metadata: Record<string, unknown> | null;
+  metadata: Record<string, unknown>|null;
   progressPercent: number | null;
   progressLabel: string | null;
-  progressMeta: Record<string, unknown> | null;
+  progressMeta: Record<string, unknown>|null;
   concurrencyKey: string | null;
   dedupeKey: string | null;
   supersedeKey: string | null;
@@ -83,12 +83,12 @@ export type TaskStepRecord = {
   kind: TaskStepKind;
   level: TaskStepLevel;
   message: string;
-  meta: Record<string, unknown> | null;
+  meta: Record<string, unknown>|null;
   percent: number | null;
   createdAt: string;
 };
 
-export type TaskSnapshot<TInput = unknown, TResult = unknown> = {
+export type TaskSnapshot<TInput=unknown, TResult=unknown> = {
   taskId: string;
   kind: string;
   status: TaskStatus;
@@ -96,7 +96,7 @@ export type TaskSnapshot<TInput = unknown, TResult = unknown> = {
   input: TInput;
   output: TResult | null;
   error: TaskTerminalError | null;
-  metadata: Record<string, unknown> | null;
+  metadata: Record<string, unknown>|null;
   progress: TaskProgressState;
   concurrencyKey: string | null;
   dedupeKey: string | null;
@@ -128,7 +128,7 @@ export type TaskListQuery = {
   orderBy?: "created_asc" | "created_desc" | "scheduled_asc" | "scheduled_desc" | "updated_desc";
 };
 
-export type TaskSnapshotQuery = TaskListQuery & {
+export type TaskSnapshotQuery = TaskListQuery& {
   states?: TaskLifecycleState[] | null;
   includeSteps?: number | null;
 };

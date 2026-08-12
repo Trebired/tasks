@@ -25,7 +25,7 @@ export {
   resolveTaskChannels,
   taskChannel,
 } from "./core/channels.js";
-export { createTaskHost } from "./core/host.js";
+export { createTaskHost } from "./core/host/create.js";
 export {
   buildTaskAggregateSnapshot,
   createTaskProgressState,

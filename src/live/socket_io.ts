@@ -13,43 +13,43 @@ function attachTaskLiveSocketBridge(
   const publishEvent = options.publishEvent || "tasks:live";
 
   server.on("connection", (socket) => {
-    const subscriptions = new Map<string, () => void>();
+      const subscriptions = new Map<string, ()=>void>();
 
-    socket.on(subscribeEvent, async (...args: unknown[]) => {
-      const payload = (args[0] || {}) as {
-        id?: string;
-        query?: TaskSubscriptionQuery;
-      };
-      const id = payload.id || "default";
+      socket.on(subscribeEvent, async(...args: unknown[]) => {
+          const payload = (args[0] || {}) as {
+            id?: string;
+            query?: TaskSubscriptionQuery;
+          };
+          const id = payload.id || "default";
 
-      const existing = subscriptions.get(id);
-      if (existing) {
-        existing();
-        subscriptions.delete(id);
-      }
+          const existing = subscriptions.get(id);
+          if (existing) {
+            existing();
+            subscriptions.delete(id);
+          }
 
-      const unsubscribe = await options.hub.subscribe(payload.query || {}, (message) => {
-        socket.emit(publishEvent, {
-          id,
-          ...message,
-        });
+          const unsubscribe = await options.hub.subscribe(payload.query || {}, (message) => {
+              socket.emit(publishEvent, {
+                  id,
+                  ...message,
+              });
+          });
+
+          subscriptions.set(id, unsubscribe);
       });
 
-      subscriptions.set(id, unsubscribe);
-    });
-
-    socket.on(unsubscribeEvent, (...args: unknown[]) => {
-      const payload = (args[0] || {}) as {
-        id?: string;
-      };
-      const id = payload.id || "default";
-      const unsubscribe = subscriptions.get(id);
-      if (!unsubscribe) {
-        return;
-      }
-      unsubscribe();
-      subscriptions.delete(id);
-    });
+      socket.on(unsubscribeEvent, (...args: unknown[]) => {
+          const payload = (args[0] || {}) as {
+            id?: string;
+          };
+          const id = payload.id || "default";
+          const unsubscribe = subscriptions.get(id);
+          if (!unsubscribe) {
+            return;
+          }
+          unsubscribe();
+          subscriptions.delete(id);
+      });
   });
 }
 

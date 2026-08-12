@@ -40,16 +40,16 @@ function resolveLifecycleLevel(event: TaskLifecycleEvent): TaskStepLevel {
 
   switch (event.event) {
     case "succeeded":
-      return "success";
+    return "success";
     case "failed":
     case "lease_lost":
-      return "error";
+    return "error";
     case "retried":
     case "cancelled":
     case "stale":
-      return "warn";
+    return "warn";
     default:
-      return "info";
+    return "info";
   }
 }
 
@@ -61,7 +61,7 @@ function resolveLifecycleMessage(event: TaskLifecycleEvent): string {
   return lifecycleMessages[event.event];
 }
 
-function createLifecycleMetadata(event: TaskLifecycleEvent): Record<string, unknown> | null {
+function createLifecycleMetadata(event: TaskLifecycleEvent): Record<string, unknown>|null {
   const metadata = {
     channels: event.channels,
     disposition: event.disposition,

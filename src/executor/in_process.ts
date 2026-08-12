@@ -5,7 +5,7 @@ import type {
   TaskExecutorOutcome,
   TaskExecutorRunRequest,
 } from "#2kjvrax0gr4m";
-import { toErrorShape } from "#g6h3y0rvrh9n";
+import { toErrorShape } from "#92c6666f713d";
 import { createTaskHandlerContext } from "./core/context.js";
 import {
   defaultTaskModuleLoader,
@@ -27,7 +27,7 @@ async function executeInProcessTask(
   const completion = runInProcessTask(options, request, controller.signal, cleanup);
 
   return {
-    cancel: async (reason) => {
+    cancel: async(reason) => {
       controller.abort(reason ? new Error(reason) : new Error("Task cancelled"));
     },
     completion,
@@ -42,7 +42,7 @@ function bindRequestSignal(controller: AbortController, signal: AbortSignal): ()
 
   const abort = () => controller.abort(signal.reason);
   signal.addEventListener("abort", abort, {
-    once: true,
+      once: true,
   });
 
   return () => signal.removeEventListener("abort", abort);
@@ -74,13 +74,13 @@ async function runInProcessTask(
     );
 
     return signal.aborted
-      ? {
-        status: "cancelled",
-      }
-      : {
-        status: "succeeded",
-        output,
-      };
+    ? {
+      status: "cancelled",
+    }
+    : {
+      status: "succeeded",
+      output,
+    };
   } catch (error) {
     if (signal.aborted || isAbortLikeError(error)) {
       return {

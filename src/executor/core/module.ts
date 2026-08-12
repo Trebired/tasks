@@ -23,7 +23,7 @@ function resolveTaskModuleSpecifier(input: string | URL): string {
 }
 
 function resolveTaskHandlerExport(mod: Record<string, unknown>, exportName?: string): TaskHandlerModule {
-  const candidate = exportName ? mod[exportName] : mod.default ?? mod.handler ?? mod;
+  const candidate = exportName ? mod[exportName] : mod.default ??mod.handler ?? mod;
 
   if (typeof candidate === "function") {
     return {
@@ -31,7 +31,7 @@ function resolveTaskHandlerExport(mod: Record<string, unknown>, exportName?: str
     };
   }
 
-  if (candidate && typeof candidate === "object" && typeof (candidate as TaskHandlerModule).run === "function") {
+  if (candidate && typeof candidate === "object" && typeof(candidate as TaskHandlerModule).run === "function") {
     return candidate as TaskHandlerModule;
   }
 
@@ -43,7 +43,7 @@ async function defaultTaskModuleLoader(specifier: string): Promise<Record<string
 }
 
 async function loadTaskHandlerModule(
-  entrypoint: Pick<TaskHandlerEntrypoint, "module" | "export">,
+  entrypoint: Pick<TaskHandlerEntrypoint, "module"|"export">,
   loadModule: InProcessTaskModuleLoader = defaultTaskModuleLoader,
 ): Promise<TaskHandlerModule> {
   const specifier = resolveTaskModuleSpecifier(entrypoint.module);

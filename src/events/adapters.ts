@@ -11,7 +11,7 @@ import {
 } from "./entry.js";
 
 function createTaskHostEventAdapter(sink: TaskEventEntrySink<TaskHostEvent>): TaskHostEventListener {
-  return async (event) => {
+  return async(event) => {
     await sink(normalizeTaskHostEventEntry(event), event);
   };
 }
@@ -19,7 +19,7 @@ function createTaskHostEventAdapter(sink: TaskEventEntrySink<TaskHostEvent>): Ta
 function createTaskLifecycleEventAdapter(
   sink: TaskEventEntrySink<TaskLifecycleEvent>,
 ): TaskLifecycleEventListener {
-  return async (event) => {
+  return async(event) => {
     await sink(normalizeTaskLifecycleEventEntry(event), event);
   };
 }

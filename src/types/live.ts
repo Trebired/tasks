@@ -12,7 +12,15 @@ import type {
   TaskStepListQuery,
   TaskStepRecord,
 } from "./core.js";
-import { TaskEnqueueOptions, TaskEnqueueResult, TaskExecutor, TaskHandlerRegistration, TaskHostEventListener, TaskLifecycleEvent, TaskLifecycleEventListener } from "./execution.js";
+import {
+  TaskEnqueueOptions,
+  TaskEnqueueResult,
+  TaskExecutor,
+  TaskHandlerRegistration,
+  TaskHostEventListener,
+  TaskLifecycleEvent,
+  TaskLifecycleEventListener,
+} from "./execution.js";
 import type { TaskStore } from "./store.js";
 import type { TaskLogger, TaskLoggerAdapter } from "./logging.js";
 
@@ -75,8 +83,13 @@ export type TaskLiveUpdate = {
 export type TaskLiveMessage = TaskSubscriptionBootstrap | TaskLiveUpdate;
 
 export type TaskLiveHub = {
-  bootstrap: (query?: TaskSubscriptionQuery) => Promise<TaskSubscriptionBootstrap>;
-  subscribe: (query: TaskSubscriptionQuery | undefined, listener: (message: TaskLiveMessage) => void | Promise<void>) => Promise<() => void>;
+  bootstrap: (
+    query?: TaskSubscriptionQuery,
+  ) => Promise<TaskSubscriptionBootstrap>;
+  subscribe: (
+    query: TaskSubscriptionQuery | undefined,
+    listener: (message: TaskLiveMessage) => void |Promise<void>,
+  ) => Promise<()=>void>;
 };
 
 export type TaskHost = {
@@ -84,22 +97,49 @@ export type TaskHost = {
   stop: () => Promise<void>;
   getState: () => TaskHostState;
   registerHandler: (handler: TaskHandlerRegistration) => TaskHost;
-  enqueue: <TInput = unknown>(kind: string, input: TInput, options?: TaskEnqueueOptions) => Promise<TaskEnqueueResult>;
-  getTask: <TInput = unknown, TResult = unknown>(taskId: string) => Promise<TaskRecord<TInput, TResult> | null>;
-  listTasks: <TInput = unknown, TResult = unknown>(query?: TaskListQuery) => Promise<TaskRecord<TInput, TResult>[]>;
-  listTaskSteps: (taskId: string, query?: TaskStepListQuery) => Promise<TaskStepRecord[]>;
-  readSnapshot: <TInput = unknown, TResult = unknown>(taskId: string, options?: {
-    includeSteps?: number | null;
-  }) => Promise<(TaskSnapshot<TInput, TResult> & {
+  enqueue: <TInput = unknown > (
+    kind: string,
+    input: TInput,
+    options?: TaskEnqueueOptions,
+  ) => Promise<TaskEnqueueResult>;
+  getTask: <TInput = unknown, TResult = unknown > (
+    taskId: string,
+  ) => Promise<TaskRecord<TInput, TResult>|null>;
+  listTasks: <TInput = unknown, TResult = unknown > (
+    query?: TaskListQuery,
+  ) => Promise<TaskRecord<TInput, TResult>[]>;
+  listTaskSteps: (
+    taskId: string,
+    query?: TaskStepListQuery,
+  ) => Promise<TaskStepRecord[]>;
+  readSnapshot: <TInput = unknown, TResult = unknown > (
+    taskId: string,
+    options?: {
+      includeSteps?: number | null;
+    },
+  ) => Promise<
+  |(TaskSnapshot<TInput, TResult>& {
+      steps?: TaskStepRecord[];
+  })
+  |null
+  >;
+  listSnapshots: <TInput = unknown, TResult = unknown > (
+    query?: TaskSnapshotQuery,
+  ) => Promise<
+  Array<
+  TaskSnapshot<TInput, TResult>& {
     steps?: TaskStepRecord[];
-  }) | null>;
-  listSnapshots: <TInput = unknown, TResult = unknown>(query?: TaskSnapshotQuery) => Promise<Array<TaskSnapshot<TInput, TResult> & {
-    steps?: TaskStepRecord[];
-  }>>;
+  }
+  >
+  >;
   readAggregate: (query?: TaskListQuery) => Promise<TaskAggregateSnapshot>;
-  bootstrap: (query?: TaskSubscriptionQuery) => Promise<TaskSubscriptionBootstrap>;
-  compact: (policy?: TaskRetentionPolicy | null) => Promise<TaskRetentionResult>;
-  cancel: (taskId: string, reason?: string) => Promise<TaskRecord | null>;
+  bootstrap: (
+    query?: TaskSubscriptionQuery,
+  ) => Promise<TaskSubscriptionBootstrap>;
+  compact: (
+    policy?: TaskRetentionPolicy | null,
+  ) => Promise<TaskRetentionResult>;
+  cancel: (taskId: string, reason?: string) => Promise<TaskRecord|null>;
   onEvent: (listener: TaskHostEventListener) => () => void;
   onLifecycleEvent: (listener: TaskLifecycleEventListener) => () => void;
 };
@@ -123,7 +163,10 @@ export type TaskLiveSocketLike = {
 };
 
 export type TaskLiveSocketServerLike = {
-  on: (event: "connection", listener: (socket: TaskLiveSocketLike) => void) => unknown;
+  on: (
+    event: "connection",
+    listener: (socket: TaskLiveSocketLike) => void,
+  ) => unknown;
 };
 
 export type TaskLiveSocketBridgeOptions = {

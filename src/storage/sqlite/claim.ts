@@ -13,39 +13,39 @@ import {
   withSqliteTransaction,
 } from "./shared.js";
 
-async function claimNextTask<TInput = unknown, TResult = unknown>(
+async function claimNextTask<TInput=unknown, TResult=unknown>(
   context: SqliteTaskStoreContext,
   input: TaskClaimNextOptions,
-): Promise<TaskRecord<TInput, TResult> | null> {
+): Promise<TaskRecord<TInput, TResult>|null> {
   if (!input.kinds.length) {
     return null;
   }
 
   return withSqliteTransaction(context.db, () => {
-    if (reachedGlobalConcurrency(context, input.globalConcurrency)) {
+      if (reachedGlobalConcurrency(context, input.globalConcurrency)) {
+        return null;
+      }
+
+      const busyKeys = readBusyKeySet(context);
+      const kindCounts = new Map<string, number>();
+      const queued = selectQueuedCandidates(context, input);
+
+      for (const row of queued) {
+        if (row.concurrency_key && busyKeys.has(row.concurrency_key)) {
+          continue;
+        }
+
+        if (reachedKindConcurrency(context, input, row.kind, kindCounts)) {
+          continue;
+        }
+
+        const claimed = claimQueuedRow(context, input, row);
+        if (claimed) {
+          return claimed as TaskRecord<TInput, TResult>;
+        }
+      }
+
       return null;
-    }
-
-    const busyKeys = readBusyKeySet(context);
-    const kindCounts = new Map<string, number>();
-    const queued = selectQueuedCandidates(context, input);
-
-    for (const row of queued) {
-      if (row.concurrency_key && busyKeys.has(row.concurrency_key)) {
-        continue;
-      }
-
-      if (reachedKindConcurrency(context, input, row.kind, kindCounts)) {
-        continue;
-      }
-
-      const claimed = claimQueuedRow(context, input, row);
-      if (claimed) {
-        return claimed as TaskRecord<TInput, TResult>;
-      }
-    }
-
-    return null;
   });
 }
 
@@ -54,12 +54,12 @@ function reachedGlobalConcurrency(context: SqliteTaskStoreContext, limit?: numbe
     return false;
   }
 
-  const row = executeGet<{ count: number }>(
+  const row = executeGet<{count:number}>(
     context.db,
     `
-      select count(*) as count
-      from "${context.names.tasksTable}"
-      where status in ('claimed', 'running')
+    select count(*) as count
+    from "${context.names.tasksTable}"
+    where status in ('claimed', 'running')
     `,
   );
 
@@ -67,13 +67,13 @@ function reachedGlobalConcurrency(context: SqliteTaskStoreContext, limit?: numbe
 }
 
 function readBusyKeySet(context: SqliteTaskStoreContext): Set<string> {
-  const rows = executeAll<{ concurrency_key: string }>(
+  const rows = executeAll<{concurrency_key:string}>(
     context.db,
     `
-      select distinct concurrency_key
-      from "${context.names.tasksTable}"
-      where status in ('claimed', 'running')
-        and concurrency_key is not null
+    select distinct concurrency_key
+    from "${context.names.tasksTable}"
+    where status in ('claimed', 'running')
+    and concurrency_key is not null
     `,
   );
 
@@ -86,13 +86,13 @@ function selectQueuedCandidates(context: SqliteTaskStoreContext, input: TaskClai
   return executeAll<SqliteTaskRow>(
     context.db,
     `
-      select *
-      from "${context.names.tasksTable}"
-      where status = 'queued'
-        and kind in (${kindPlaceholders})
-        and scheduled_at <= ?
-      order by scheduled_at asc, created_at asc
-      limit ?
+    select *
+    from "${context.names.tasksTable}"
+    where status = 'queued'
+    and kind in (${kindPlaceholders})
+    and scheduled_at <= ?
+    order by scheduled_at asc, created_at asc
+    limit ?
     `,
     [...input.kinds, nowIso(input.now), Math.max(1, input.candidateLimit ?? 100)],
   );
@@ -119,13 +119,13 @@ function reachedKindConcurrency(
 }
 
 function countRunningKind(context: SqliteTaskStoreContext, kind: string): number {
-  const row = executeGet<{ count: number }>(
+  const row = executeGet<{count:number}>(
     context.db,
     `
-      select count(*) as count
-      from "${context.names.tasksTable}"
-      where status in ('claimed', 'running')
-        and kind = ?
+    select count(*) as count
+    from "${context.names.tasksTable}"
+    where status in ('claimed', 'running')
+    and kind = ?
     `,
     [kind],
   );
@@ -143,20 +143,20 @@ function claimQueuedRow(
   executeRun(
     context.db,
     `
-      update "${context.names.tasksTable}"
-      set
-        status = 'claimed',
-        attempt = attempt + 1,
-        claimed_at = ?,
-        updated_at = ?,
-        lease_owner = ?,
-        lease_token = ?,
-        lease_expires_at = ?,
-        last_heartbeat_at = ?,
-        stale_at = null,
-        stale_reason = null
-      where id = ?
-        and status = 'queued'
+    update "${context.names.tasksTable}"
+    set
+    status = 'claimed',
+    attempt = attempt + 1,
+    claimed_at = ?,
+    updated_at = ?,
+    lease_owner = ?,
+    lease_token = ?,
+    lease_expires_at = ?,
+    last_heartbeat_at = ?,
+    stale_at = null,
+    stale_reason = null
+    where id = ?
+    and status = 'queued'
     `,
     [
       current,

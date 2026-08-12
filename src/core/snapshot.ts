@@ -31,7 +31,7 @@ const TASK_STATUSES: TaskStatus[] = [
   "cancelled",
 ];
 
-function resolveTaskLifecycleState(task: Pick<TaskRecord, "attempt" | "retryScheduledAt" | "staleAt" | "status">): TaskLifecycleState {
+function resolveTaskLifecycleState(task: Pick<TaskRecord, "attempt"|"retryScheduledAt"|"staleAt"|"status">): TaskLifecycleState {
   if (task.staleAt && (task.status === "queued" || task.status === "claimed" || task.status === "running")) {
     return "stale";
   }
@@ -59,7 +59,7 @@ function createTaskProgressState(task: TaskRecord): TaskSnapshot["progress"] {
   };
 }
 
-function createTaskSnapshot<TInput = unknown, TResult = unknown>(task: TaskRecord<TInput, TResult>): TaskSnapshot<TInput, TResult> {
+function createTaskSnapshot<TInput=unknown, TResult=unknown>(task: TaskRecord<TInput, TResult>): TaskSnapshot<TInput, TResult> {
   return {
     taskId: task.id,
     kind: task.kind,
@@ -93,7 +93,7 @@ function matchesTaskQuery(snapshot: TaskSnapshot, query?: TaskSnapshotQuery | Ta
     return true;
   }
 
-  if ("taskIds" in query && query.taskIds?.length && !query.taskIds.includes(snapshot.taskId)) {
+  if ("taskIds"in query && query.taskIds?.length && !query.taskIds.includes(snapshot.taskId)) {
     return false;
   }
 
@@ -105,7 +105,7 @@ function matchesTaskQuery(snapshot: TaskSnapshot, query?: TaskSnapshotQuery | Ta
     return false;
   }
 
-  if ("states" in query && query.states?.length && !query.states.includes(snapshot.state)) {
+  if ("states"in query && query.states?.length && !query.states.includes(snapshot.state)) {
     return false;
   }
 
@@ -113,15 +113,15 @@ function matchesTaskQuery(snapshot: TaskSnapshot, query?: TaskSnapshotQuery | Ta
     return false;
   }
 
-  if ("concurrencyKey" in query && query.concurrencyKey && snapshot.concurrencyKey !== query.concurrencyKey) {
+  if ("concurrencyKey"in query && query.concurrencyKey && snapshot.concurrencyKey !== query.concurrencyKey) {
     return false;
   }
 
-  if ("dedupeKey" in query && query.dedupeKey && snapshot.dedupeKey !== query.dedupeKey) {
+  if ("dedupeKey"in query && query.dedupeKey && snapshot.dedupeKey !== query.dedupeKey) {
     return false;
   }
 
-  if ("supersedeKey" in query && query.supersedeKey && snapshot.supersedeKey !== query.supersedeKey) {
+  if ("supersedeKey"in query && query.supersedeKey && snapshot.supersedeKey !== query.supersedeKey) {
     return false;
   }
 

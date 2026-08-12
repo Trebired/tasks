@@ -9,10 +9,12 @@ import type {
   TaskRecord,
   TaskStatus,
   TaskStepRecord,
-  TaskTerminalError,
 } from "#2kjvrax0gr4m";
-import { nowIso, parseJsonValue, taskId } from "#92c6666f713d";
-import { normalizeTaskChannels } from "#8942387ee1fc";
+import { taskId } from "#92c6666f713d";
+import {
+  mapStorageStepRow,
+  mapStorageTaskRow,
+} from "#biq6enncufmz";
 
 const require = createRequire(import.meta.url);
 
@@ -126,7 +128,7 @@ function openSqliteDatabaseFromPath(path: string): SqliteTaskDatabase {
 function tryOpenBunSqlite(path: string): SqliteTaskDatabase | null {
   try {
     const mod = require("bun:sqlite") as {
-      Database: new (path: string) => SqliteTaskDatabase;
+      Database: new(path: string) => SqliteTaskDatabase;
     };
     return new mod.Database(path);
   } catch {
@@ -137,7 +139,7 @@ function tryOpenBunSqlite(path: string): SqliteTaskDatabase | null {
 function tryOpenNodeSqlite(path: string): SqliteTaskDatabase | null {
   try {
     const mod = require("node:sqlite") as {
-      DatabaseSync: new (path: string) => SqliteTaskDatabase;
+      DatabaseSync: new(path: string) => SqliteTaskDatabase;
     };
     return new mod.DatabaseSync(path);
   } catch {
@@ -147,7 +149,7 @@ function tryOpenNodeSqlite(path: string): SqliteTaskDatabase | null {
 
 function tryOpenBetterSqlite(path: string): SqliteTaskDatabase | null {
   try {
-    const BetterSqlite = require("better-sqlite3") as new (path: string) => SqliteTaskDatabase;
+    const BetterSqlite = require("better-sqlite3") as new(path: string) => SqliteTaskDatabase;
     return new BetterSqlite(path);
   } catch {
     return null;
@@ -156,13 +158,13 @@ function tryOpenBetterSqlite(path: string): SqliteTaskDatabase | null {
 
 function applySqlitePragmas(database: SqliteTaskDatabase, options: SqliteTaskSchemaOptions): void {
   const pragmas = options.pragmas?.length
-    ? options.pragmas
-    : [
-      "pragma journal_mode = wal",
-      "pragma synchronous = normal",
-      "pragma foreign_keys = on",
-      `pragma busy_timeout = ${Math.max(0, options.busyTimeoutMs ?? 5_000)}`,
-    ];
+  ? options.pragmas
+  : [
+    "pragma journal_mode = wal",
+    "pragma synchronous = normal",
+    "pragma foreign_keys = on",
+    `pragma busy_timeout = ${Math.max(0, options.busyTimeoutMs ?? 5_000)}`,
+  ];
 
   for (const pragma of pragmas) {
     database.exec(`${pragma};`);
@@ -182,56 +184,10 @@ function withSqliteTransaction<T>(database: SqliteTaskDatabase, run: () => T): T
   }
 }
 
-function mapSqliteTaskRow(row: SqliteTaskRow): TaskRecord {
-  return {
-    id: row.id,
-    kind: row.kind,
-    status: row.status,
-    input: parseJsonValue(row.input, null),
-    output: parseJsonValue(row.output, null),
-    error: parseJsonValue<TaskTerminalError | null>(row.error, null),
-    metadata: parseJsonValue(row.metadata, {}),
-    progressPercent: typeof row.progress_percent === "number" ? row.progress_percent : null,
-    progressLabel: row.progress_label,
-    progressMeta: parseJsonValue(row.progress_meta, null),
-    concurrencyKey: row.concurrency_key,
-    dedupeKey: row.dedupe_key,
-    supersedeKey: row.supersede_key,
-    channels: normalizeTaskChannels(parseJsonValue(row.channels, [])),
-    attempt: Number(row.attempt || 0),
-    maxAttempts: Number(row.max_attempts || 1),
-    scheduledAt: nowIso(row.scheduled_at),
-    createdAt: nowIso(row.created_at),
-    updatedAt: nowIso(row.updated_at),
-    claimedAt: row.claimed_at ? nowIso(row.claimed_at) : null,
-    startedAt: row.started_at ? nowIso(row.started_at) : null,
-    finishedAt: row.finished_at ? nowIso(row.finished_at) : null,
-    cancelRequestedAt: row.cancel_requested_at ? nowIso(row.cancel_requested_at) : null,
-    leaseOwner: row.lease_owner,
-    leaseToken: row.lease_token,
-    leaseExpiresAt: row.lease_expires_at ? nowIso(row.lease_expires_at) : null,
-    lastHeartbeatAt: row.last_heartbeat_at ? nowIso(row.last_heartbeat_at) : null,
-    retryScheduledAt: row.retry_scheduled_at ? nowIso(row.retry_scheduled_at) : null,
-    staleAt: row.stale_at ? nowIso(row.stale_at) : null,
-    staleReason: row.stale_reason,
-  };
-}
+const mapSqliteTaskRow = mapStorageTaskRow as(row: SqliteTaskRow) => TaskRecord;
+const mapSqliteStepRow = mapStorageStepRow as(row: SqliteTaskStepRow) => TaskStepRecord;
 
-function mapSqliteStepRow(row: SqliteTaskStepRow): TaskStepRecord {
-  return {
-    id: String(row.id),
-    taskId: row.task_id,
-    attempt: Number(row.attempt || 0),
-    kind: row.kind,
-    level: row.level,
-    message: row.message,
-    meta: parseJsonValue(row.meta, null),
-    percent: typeof row.percent === "number" ? row.percent : null,
-    createdAt: nowIso(row.created_at),
-  };
-}
-
-function executeAll<T = Record<string, unknown>>(
+function executeAll<T=Record<string, unknown>>(
   database: SqliteTaskDatabase,
   sql: string,
   params: unknown[] = [],
@@ -239,12 +195,25 @@ function executeAll<T = Record<string, unknown>>(
   return prepareStatement(database, sql).all<T>(...params);
 }
 
-function executeGet<T = Record<string, unknown>>(
+function executeGet<T=Record<string, unknown>>(
   database: SqliteTaskDatabase,
   sql: string,
   params: unknown[] = [],
 ): T | null {
   return prepareStatement(database, sql).get<T>(...params) ?? null;
+}
+
+function readSqliteTaskById<TInput=unknown, TResult=unknown>(
+  context: SqliteTaskStoreContext,
+  taskIdValue: string,
+): TaskRecord<TInput, TResult>|null {
+  const row = executeGet<SqliteTaskRow>(
+    context.db,
+    `select * from "${context.names.tasksTable}" where id = ? limit 1`,
+    [taskIdValue],
+  );
+
+  return (row ? mapSqliteTaskRow(row) : null) as TaskRecord<TInput, TResult>|null;
 }
 
 function executeRun(
@@ -284,6 +253,7 @@ export {
   executeRun,
   mapSqliteStepRow,
   mapSqliteTaskRow,
+  readSqliteTaskById,
   readSqliteChanges,
   resolveSqliteDatabase,
   resolveSqliteNames,
