@@ -8,6 +8,7 @@
   "#32g8np5v5jpb": "./src/types/integrations.ts",
   "#35k522mcym6s": "./examples/sqlite_in_process.ts",
   "#3eil9krdpowm": "./src/storage/sqlite/completion.ts",
+  "#3m8bp06u1yxd": "./.trebired/logger/config.ts",
   "#44ds7phbcz8i": "./src/package-metadata.ts",
   "#4bd798a4d972": "./src/executor/child/process.ts",
   "#4xg12aru9hri": "./src/live/tracker.ts",
