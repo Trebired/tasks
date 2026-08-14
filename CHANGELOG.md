@@ -4,9 +4,15 @@ All notable changes to `@trebired/tasks` will be documented here.
 
 This project follows semantic versioning once published.
 
+## 1.2.0
+
+- Updated the shared Trebired config dependency to `@trebired/configs@^0.1.2`.
+- Added public `.trebired/tasks/config.ts` support through `@trebired/tasks/config`.
+- Task host, retry backoff, and storage factory defaults now merge package config before explicit caller options.
+
 ## 1.1.13
 
-- Adopted the external `@trebired/code-discipline-config` preset and updated Code Discipline tooling to `@trebired/code-discipline@^6.0.9`.
+- Adopted the external `@trebired/configs` preset and updated Code Discipline tooling to `@trebired/code-discipline@^6.0.9`.
 
 ## 1.1.12
 

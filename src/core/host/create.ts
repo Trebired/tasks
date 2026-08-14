@@ -4,6 +4,7 @@ import {
   createTaskHostContext,
   registerTaskHostHandler,
 } from "./context.js";
+import { loadCachedConfigSync, mergeTaskHostOptions } from "#kpb3tx22xs9n";
 import { startTaskHost, stopTaskHost } from "./lifecycle.js";
 import {
   bootstrapTaskSubscription,
@@ -16,7 +17,8 @@ import { scheduleTaskHostPump } from "./pump.js";
 import { startTaskExecution } from "./execution.js";
 
 function createTaskHost(options: TaskHostOptions): TaskHost {
-  const context = createTaskHostContext(options);
+  const resolvedOptions = mergeTaskHostOptions(loadCachedConfigSync(), options);
+  const context = createTaskHostContext(resolvedOptions);
   const schedulePump = () => scheduleTaskHostPump(context, (task, handler) => startTaskExecution(context, task, handler, schedulePump));
 
   const host: TaskHost = {
@@ -45,12 +47,12 @@ function createTaskHost(options: TaskHostOptions): TaskHost {
     onLifecycleEvent: (listener) => context.lifecycleEmitter.add(listener),
   };
 
-  if (options.onEvent) {
-    host.onEvent(options.onEvent);
+  if (resolvedOptions.onEvent) {
+    host.onEvent(resolvedOptions.onEvent);
   }
 
-  if (options.onLifecycleEvent) {
-    host.onLifecycleEvent(options.onLifecycleEvent);
+  if (resolvedOptions.onLifecycleEvent) {
+    host.onLifecycleEvent(resolvedOptions.onLifecycleEvent);
   }
 
   return host;

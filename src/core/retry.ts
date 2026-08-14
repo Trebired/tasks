@@ -4,6 +4,7 @@ import {
   DEFAULT_TASK_BACKOFF_MAX_DELAY_MS,
   DEFAULT_TASK_BACKOFF_MIN_DELAY_MS,
 } from "#0bba403f3e43";
+import { loadCachedConfigSync, mergeRetryBackoff } from "#kpb3tx22xs9n";
 import type {
   TaskHandlerRegistration,
   TaskRecord,
@@ -16,10 +17,11 @@ import type {
 import { nowIso } from "./utils.js";
 
 function resolveBackoffMs(attempt: number, backoff?: TaskRetryBackoff | null): number {
-  const minDelayMs = backoff?.minDelayMs ?? DEFAULT_TASK_BACKOFF_MIN_DELAY_MS;
-  const maxDelayMs = backoff?.maxDelayMs ?? DEFAULT_TASK_BACKOFF_MAX_DELAY_MS;
-  const factor = backoff?.factor ?? DEFAULT_TASK_BACKOFF_FACTOR;
-  const jitter = backoff?.jitter ?? DEFAULT_TASK_BACKOFF_JITTER;
+  const resolvedBackoff = mergeRetryBackoff(loadCachedConfigSync(), backoff);
+  const minDelayMs = resolvedBackoff?.minDelayMs ?? DEFAULT_TASK_BACKOFF_MIN_DELAY_MS;
+  const maxDelayMs = resolvedBackoff?.maxDelayMs ?? DEFAULT_TASK_BACKOFF_MAX_DELAY_MS;
+  const factor = resolvedBackoff?.factor ?? DEFAULT_TASK_BACKOFF_FACTOR;
+  const jitter = resolvedBackoff?.jitter ?? DEFAULT_TASK_BACKOFF_JITTER;
 
   const base = Math.min(minDelayMs * Math.max(1, factor) ** Math.max(0, attempt - 1), maxDelayMs);
   const jitterDelta = base * jitter;

@@ -2,6 +2,19 @@ export {
   createTaskStore,
 } from "./storage/create.js";
 export {
+  TASKS_PROJECT_CONFIG_PATH,
+  defineConfig,
+  findConfig,
+  findConfigSync,
+  loadCachedConfigSync,
+  loadConfig,
+  loadConfigSync,
+  mergeRetryBackoff,
+  mergeTaskHostOptions,
+  mergeTaskStoreOptions,
+  normalizeConfig,
+} from "./config/index.js";
+export {
   prepareTaskStoreSchema,
 } from "./storage/prepare.js";
 export {
@@ -161,3 +174,10 @@ export type {
   TaskTerminalError,
   TaskUpdateProgressInput,
 } from "./types.js";
+export type {
+  LoadedTasksConfig,
+  LoadTasksConfigOptions,
+  NormalizedTasksConfig,
+  TasksConfig,
+  TasksStoreOptions,
+} from "./config/index.js";
