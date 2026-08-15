@@ -1,19 +1,11 @@
 import { randomUUID } from "node:crypto";
 import { setTimeout as delay } from "node:timers/promises";
 
+import { nowIso } from "@trebired/utils";
+
 import type { TaskTerminalError } from "#2kjvrax0gr4m";
 
-export function nowIso(value?: string | Date | number | null): string {
-  if (value == null) {
-    return new Date().toISOString();
-  }
-
-  if (typeof value === "string") {
-    return new Date(value).toISOString();
-  }
-
-  return new Date(value).toISOString();
-}
+export { nowIso };
 
 export function taskId(value?: string | null): string {
   return value || randomUUID();

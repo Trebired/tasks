@@ -4,15 +4,31 @@ import type {
   TasksStoreOptions,
 } from "./types.js";
 import type { TaskHostOptions, TaskRetryBackoff } from "#2kjvrax0gr4m";
+import { PACKAGE_VERSION } from "#44ds7phbcz8i";
+import {
+  isRecord,
+  toTrimmedString,
+  uniqueStrings,
+} from "@trebired/utils";
+import { resolveForVersion } from "@trebired/utils";
+
+type NormalizeOptions = {
+  configPath?: string;
+  requireForVersion?: boolean;
+};
 
 function defineConfig<TConfig extends TasksConfig>(config: TConfig): TConfig {
   return config;
 }
 
-function normalizeConfig(config: TasksConfig = {}): NormalizedTasksConfig {
+function normalizeConfig(
+  config: TasksConfig = {},
+  options: NormalizeOptions = {},
+): NormalizedTasksConfig {
   if (!isRecord(config)) throw new Error("tasks config must be an object");
   return {
     defaults: normalizeDefaults(config.defaults),
+    forVersion: normalizeForVersion(config, options),
     runner: normalizeRunner(config.runner),
     storage: normalizeStorage(config.storage),
   };
@@ -128,23 +144,32 @@ function normalizePositiveNumber(value: unknown): number | undefined {
   return normalized === undefined ? undefined : Math.max(1, normalized);
 }
 
+function normalizeForVersion(
+  config: TasksConfig,
+  options: NormalizeOptions,
+): string {
+  return resolveForVersion({
+      configPath: options.configPath,
+      forVersion: config.forVersion,
+      label: "tasks",
+      packageVersion: PACKAGE_VERSION,
+      requireForVersion: options.requireForVersion,
+  });
+}
+
 function normalizeNumber(value: unknown): number | undefined {
   return typeof value === "number" && Number.isFinite(value) ? value : undefined;
 }
 
 function normalizeString(value: unknown): string | undefined {
-  const normalized = typeof value === "string" ? value.trim() : "";
+  const normalized = toTrimmedString(value);
   return normalized || undefined;
 }
 
 function normalizeStringList(value: unknown): string[] | undefined {
   const values = Array.isArray(value) ? value : typeof value === "string" ? [value] : [];
-  const normalized = Array.from(new Set(values.map(normalizeString).filter(Boolean) as string[]));
+  const normalized = uniqueStrings(values);
   return normalized.length > 0 ? normalized : undefined;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return Boolean(value && typeof value === "object" && !Array.isArray(value));
 }
 
 function pickDefined<TValue extends Record<string, unknown>>(input: TValue): Partial<TValue> {

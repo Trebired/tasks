@@ -3,6 +3,7 @@ import fsPromises from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 
+import { PACKAGE_VERSION } from "#44ds7phbcz8i";
 import type {
   LoadedTasksConfig,
   LoadTasksConfigOptions,
@@ -12,7 +13,10 @@ import type {
 import { defineConfig, normalizeConfig } from "./normalize.js";
 
 const TASKS_PROJECT_CONFIG_PATH = ".trebired/tasks/config.ts";
-const EMPTY_CONFIG = Object.freeze(normalizeConfig({}));
+const EMPTY_CONFIG = Object.freeze(normalizeConfig(
+    { forVersion: PACKAGE_VERSION },
+    { requireForVersion: false },
+));
 
 let cachedConfigs = new Map<string, LoadedTasksConfig>();
 
@@ -98,7 +102,7 @@ function missingConfig(): LoadedTasksConfig {
 
 function loadedConfig(configPath: string, config: TasksConfig): LoadedTasksConfig {
   return {
-    config: normalizeConfig(config),
+    config: normalizeConfig(config, { configPath, requireForVersion: true }),
     configPath,
     dependencies: [configPath],
   };

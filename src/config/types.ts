@@ -13,6 +13,7 @@ type TasksConfig = {
     maxAttempts?: number;
     retryBackoff?: TaskRetryBackoff;
   };
+  forVersion?: string;
   runner?: TaskRunnerOptions;
   storage?: {
     postgres?: PostgresTaskSchemaOptions;
@@ -25,6 +26,7 @@ type NormalizedTasksConfig = {
     maxAttempts?: number;
     retryBackoff?: TaskRetryBackoff;
   };
+  forVersion: string;
   runner: TaskRunnerOptions;
   storage: {
     postgres?: PostgresTaskSchemaOptions;
