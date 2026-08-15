@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.3
+
+- Updated shared utilities to `@trebired/utils@^0.4.4`.
+
 All notable changes to `@trebired/tasks` will be documented here.
 
 This project follows semantic versioning once published.
