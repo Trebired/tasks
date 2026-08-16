@@ -7,7 +7,7 @@
       "dependencies": {
         "@package/logger-adapter": "npm:@trebired/logger-adapter@^0.4.6",
         "@package/result": "npm:@trebired/result@^1.1.6",
-        "@trebired/utils": "^0.4.4",
+        "@trebired/utils": "^0.4.5",
         "better-sqlite3": "^12.11.1",
       },
       "devDependencies": {
@@ -31,7 +31,7 @@
 
     "@trebired/configs": ["@trebired/configs@0.2.0", "", {}, "sha512-j/0WdebU+nTk23pBrZWu4Y/MxOl9VQ0zGfClTH59DtFjjS1o8PcSF0B/vYDUZXUmdYyYUXI71klYfoL2D1sgXg=="],
 
-    "@trebired/utils": ["@trebired/utils@0.4.4", "", {}, "sha512-Ro3B9q5o0zGJ4tsEf+RK21njqDnCHft6RtG8Nm23D3hoDXtVfa0iFEgNy+liyKLKVEXrQ/evo4wULrpZuCtyog=="],
+    "@trebired/utils": ["@trebired/utils@0.4.5", "", {}, "sha512-QcqatsPV+YuHV3OQTEwUAb9oIfjd1FvHKJ8NdPO9V1mKX4DUyYWUSKNkHTGx3/uFEbuH2bBS9xslggw3dgv7Yw=="],
 
     "@types/bun": ["@types/bun@1.3.14", "", { "dependencies": { "bun-types": "1.3.14" } }, "sha512-h1hFqFVcvAvD9j9K7ZW7vd82aSA+rTdznZa+5bwvCwqSB1jmmfLcbIWhOLx1/+boy/xmjgCs/OMUL8hRJSmnPw=="],
 
@@ -171,9 +171,13 @@
 
     "xtend": ["xtend@4.0.2", "", {}, "sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ=="],
 
+    "@package/logger/@trebired/utils": ["@trebired/utils@0.4.4", "", {}, "sha512-Ro3B9q5o0zGJ4tsEf+RK21njqDnCHft6RtG8Nm23D3hoDXtVfa0iFEgNy+liyKLKVEXrQ/evo4wULrpZuCtyog=="],
+
     "@package/logger-adapter/@package/logger": ["@trebired/logger@2.5.21", "", { "dependencies": { "@package/result": "npm:@trebired/result@^1.1.6", "fflate": "^0.8.3", "tar-stream": "^3.2.0" }, "peerDependencies": { "react": ">=18" }, "optionalPeers": ["react"] }, "sha512-OXOEpnsHpU0J2XdeHR6iLooOLWMiDksQddZJTXCoHlJkVTUQTKBM9jJzXCV34fsBSdj4Fa/S4mbgN35+zcYogQ=="],
 
     "@package/result/@package/logger-adapter": ["@trebired/logger-adapter@0.2.12", "", {}, "sha512-QW0DpI2Etscx5amJBs2H4qiFKTbZn+bzkUAdQsEL/dDmZVH9lO7uF0s27eXIiwP49lEAroPMAdla8B2tuOJTVA=="],
+
+    "@trebired/code-discipline/@trebired/utils": ["@trebired/utils@0.4.4", "", {}, "sha512-Ro3B9q5o0zGJ4tsEf+RK21njqDnCHft6RtG8Nm23D3hoDXtVfa0iFEgNy+liyKLKVEXrQ/evo4wULrpZuCtyog=="],
 
     "bun-types/@types/node": ["@types/node@24.13.2", "", { "dependencies": { "undici-types": "~7.18.0" } }, "sha512-fRa09kZTgu8o71KFcDjUFuc7F+dEbZYZmkI0mg5YBTRs0yMKjYHsq/c0urDKeDb+D5qVgXOdFcuu+DZPKOITwA=="],
 
