@@ -8,7 +8,7 @@
     }
   },
   "name": "@trebired/tasks",
-  "version": "1.2.6",
+  "version": "1.2.7",
   "description": "Durable background task host for Bun with persisted task records, Postgres and SQLite storage, progress, retries, dedupe, recovery, and pluggable executors.",
   "type": "module",
   "private": false,
@@ -47,7 +47,7 @@
     "verify:pack": "bun ./scripts/verify-pack.mjs"
   },
   "dependencies": {
-    "@package/logger-adapter": "npm:@trebired/logger-adapter@^0.4.6",
+    "@package/logger-adapter": "npm:@trebired/logger-adapter@^0.4.17",
     "@package/result": "npm:@trebired/result@^1.1.6",
     "@trebired/utils": "^0.6.0",
     "better-sqlite3": "^12.11.1"

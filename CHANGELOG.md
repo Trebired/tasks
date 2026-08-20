@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.7
+
+- Updated the logger-adapter dependency so task host logging uses the current shared adapter release.
+
 ## 1.2.6
 
 - Removed dead `config.creator` from `package.json`.
