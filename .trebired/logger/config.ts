@@ -1,4 +1,4 @@
 export default {
-  forVersion: "2.5.26",
+  forVersion: "2.7.0",
   prefix: "trebired.tasks",
 };
