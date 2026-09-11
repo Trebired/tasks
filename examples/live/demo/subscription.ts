@@ -3,6 +3,9 @@ import {
   createTaskLiveTracker,
   taskChannel,
 } from "#8t8bq600b4wu";
+import { resolveLogger } from "@package/logger-adapter";
+
+const log = resolveLogger({ source: "@trebired/tasks" });
 
 async function subscribeToDemoUpdates(
   hub: ReturnType<typeof createTaskLiveHub>,
@@ -17,11 +20,11 @@ async function subscribeToDemoUpdates(
       const state = tracker.apply(message);
       const current = state.snapshots[0];
       if (current) {
-        console.log(
-          current.state,
-          current.progress.percent,
-          current.progress.label,
-        );
+        log.info("example.live.demo.subscription", "task update", {
+            state: current.state,
+            percent: current.progress.percent,
+            label: current.progress.label,
+        });
       }
     },
   );

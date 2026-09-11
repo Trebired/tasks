@@ -6,6 +6,9 @@ import {
   createTaskStore,
   prepareTaskStoreSchema,
 } from "#8t8bq600b4wu";
+import { resolveLogger } from "@package/logger-adapter";
+
+const log = resolveLogger({ source: "@trebired/tasks" });
 
 function createSqliteOptions(path: string) {
   return {
@@ -45,8 +48,12 @@ async function waitForSnapshot(tasks: ReturnType<typeof createTaskHost>, taskId:
       break;
     }
     if (snapshot.state === "succeeded" || snapshot.state === "failed" || snapshot.state === "cancelled") {
-      console.log("final", snapshot.state, snapshot.output, snapshot.error);
-      console.log("steps", snapshot.steps?.length ?? 0);
+      log.info("example.sqlite-in-process", "final", {
+          state: snapshot.state,
+          output: snapshot.output,
+          error: snapshot.error,
+      });
+      log.info("example.sqlite-in-process", "steps", { count: snapshot.steps?.length ?? 0 });
       break;
     }
 
@@ -64,7 +71,7 @@ async function main() {
     const queued = await tasks.enqueue("report.generate", {
         reportId: "rpt_sqlite_demo",
     });
-    console.log("queued", queued.task.id);
+    log.info("example.sqlite-in-process", "queued", { taskId: queued.task.id });
     await waitForSnapshot(tasks, queued.task.id);
   } finally {
     await tasks.stop();

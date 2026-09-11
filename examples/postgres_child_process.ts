@@ -5,6 +5,9 @@ import {
   createTaskHost,
   preparePostgresTaskStoreSchema,
 } from "#8t8bq600b4wu";
+import { resolveLogger } from "@package/logger-adapter";
+
+const log = resolveLogger({ source: "@trebired/tasks" });
 
 function createDemoTaskHost(pool: Pool) {
   return createTaskHost({
@@ -34,13 +37,17 @@ function createDemoTaskHost(pool: Pool) {
 function attachConsoleEvents(tasks: ReturnType<typeof createTaskHost>) {
   tasks.onEvent((event) => {
       if (event.type === "task:progress") {
-        console.log("progress", event.taskId, event.task?.progressPercent, event.task?.progressLabel);
+        log.info("example.postgres-child-process", "progress", {
+            taskId: event.taskId,
+            percent: event.task?.progressPercent,
+            label: event.task?.progressLabel,
+        });
       }
       if (event.type === "task:step") {
-        console.log("step", event.taskId, event.step?.message);
+        log.info("example.postgres-child-process", "step", { taskId: event.taskId, message: event.step?.message });
       }
       if (event.type === "task:succeeded") {
-        console.log("done", event.taskId, event.output);
+        log.info("example.postgres-child-process", "done", { taskId: event.taskId, output: event.output });
       }
   });
 }
@@ -53,7 +60,11 @@ async function waitForTask(tasks: ReturnType<typeof createTaskHost>, taskId: str
       break;
     }
     if (task.status === "succeeded" || task.status === "failed" || task.status === "cancelled") {
-      console.log("final", task.status, task.output, task.error);
+      log.info("example.postgres-child-process", "final", {
+          status: task.status,
+          output: task.output,
+          error: task.error,
+      });
       break;
     }
     await new Promise((resolve) => setTimeout(resolve, 500));
@@ -84,11 +95,14 @@ async function main() {
         concurrencyKey: "report:rpt_demo",
     });
 
-    console.log("queued", queued.task.id, queued.deduplicated);
+    log.info("example.postgres-child-process", "queued", {
+        taskId: queued.task.id,
+        deduplicated: queued.deduplicated,
+    });
     await waitForTask(tasks, queued.task.id);
 
     const steps = await tasks.listTaskSteps(queued.task.id);
-    console.log("steps", steps.length);
+    log.info("example.postgres-child-process", "steps", { count: steps.length });
   } finally {
     await tasks.stop();
     await pool.end();
