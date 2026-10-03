@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "category": "package",
+  "subcategory": "runtime",
+  "status": "active",
+  "npm": "@trebired/tasks",
+  "description": {
+    "en": "A durable background task host with persisted records and retries.",
+    "cs": "Odolný hostitel úloh na pozadí s uloženými záznamy a opakováním."
+  }
+}
