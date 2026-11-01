@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.3
+
+- Raised the dependency ranges to the current releases: `@trebired/logger-adapter` to `^0.8.2`, `@trebired/result` to `^1.4.1`, `@trebired/utils` to `^0.9.7`.
+- Moved the repository's own Code Discipline config to `@trebired/code-discipline` 8 and the named preset `@trebired/configs/code-discipline/preset_01` from `@trebired/configs` 0.6.0.
+
 ## 1.3.2
 
 - Moved to `@trebired/logger-adapter` 0.6.0, which depends on `@trebired/logger` 3.0.0.
